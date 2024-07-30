@@ -1,0 +1,45 @@
+server:
+  port: 8083
+
+
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: PRODUCT-SERVICE
+          uri: lb://PRODUCT-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates:  #Yönlendirme kurallarını belirler. Örneğin, Path=/users/** ifadesi, /users/ ile başlayan tüm istekleri bu rotaya yönlendirir.
+            - Path=/api/v1/products/**
+
+        - id: ORDER-SERVICE
+          uri: lb://ORDER-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates: #Yönlendirme kurallarını belirler. Örneğin, Path=/users/** ifadesi, /users/ ile başlayan tüm istekleri bu rotaya yönlendirir.
+            - Path=/api/v1/orders/**
+
+        - id: INVENTORY-SERVICE
+          uri: lb://INVENTORY-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates: #Yönlendirme kurallarını belirler. Örneğin, Path=/users/** ifadesi, /users/ ile başlayan tüm istekleri bu rotaya yönlendirir.
+            - Path=/api/v1/inventories/**
+
+
+logging:
+  level:
+    org.springframework.cloud.gateway : DEBUG #Gateway için log seviyesini belirler.
+
+
+
+
+
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone : http://localhost:8761/eureka

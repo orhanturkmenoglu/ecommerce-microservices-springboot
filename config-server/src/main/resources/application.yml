@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: CONFIG-SERVER
+
+  # config server configuration
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/orhanturkmenoglu/microservice-tutorial-config
+          clone-on-start: true

@@ -1,0 +1,34 @@
+server:
+  port: 8081
+
+
+spring:
+  application:
+    name: ORDER-SERVICE
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservice
+    username: root
+    password: 12345
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+  config:
+    import: optional:configserver:http://localhost:8084
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone : http://localhost:8761/eureka
+
+
