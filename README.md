@@ -5,12 +5,19 @@ The project demonstrates various concepts and best practices of microservices, i
 
 Proje Yapısı:
 ecommerce-microservices-springboot/
+
 ├── config-server/
+
 ├── discovery-server/
+
 ├── api-gateway/
+
 ├── product-service/
+
 ├── inventory-service/
+
 ├── order-service/
+
 └── README.md
 
 ## Technologies and Features
