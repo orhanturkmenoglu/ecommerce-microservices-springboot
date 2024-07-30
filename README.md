@@ -3,23 +3,6 @@ This repository contains a sample e-commerce application built using Spring Boot
 The project demonstrates various concepts and best practices of microservices, including service registry, API gateway, fault tolerance, distributed configuration, and more.
 
 
-Proje Yapısı:
-ecommerce-microservices-springboot/
-
-├── config-server/
-
-├── discovery-server/
-
-├── api-gateway/
-
-├── product-service/
-
-├── inventory-service/
-
-├── order-service/
-
-└── README.md
-
 ## Technologies and Features
 
 - **Spring Boot**: Core framework for building microservices.
