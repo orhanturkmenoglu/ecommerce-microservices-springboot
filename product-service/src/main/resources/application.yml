@@ -18,6 +18,26 @@ spring:
       hibernate:
         format_sql: true
 
+  rabbitmq:
+    host: localhost
+    username: guest
+    password: guest
+    port: 5672
+
+
+rabbit:
+  mq:
+    exchange:
+      name: e_commerce_exchange
+    routing:
+      key: e_commerce_routing_key
+      create:
+        product: e_commerce_routing_key_create_product
+    queue:
+      name: e_commerce_queue
+      create:
+        product: e_commerce_queue_create_product
+
   config:
     import: optional:configserver:http://localhost:8084
 
@@ -51,20 +71,19 @@ resilience4j:
         slidingWindowType: COUNT_BASED           # Kayar pencere tipini belirler.
 
 
-  retry:                    #  retry (yeniden deneme) mekanizması
+  retry: #  retry (yeniden deneme) mekanizması
     instances:
       inventoryServiceBreaker:
         max-attempts: 3     # kaç kez yeniden deneneceğini belirtir.
         wait-duration: 5s   # iki deneme arasındaki bekleme süresini belirtir.
 
 
-  ratelimiter:            #  rate limiter (oran sınırlayıcı) kullanarak belirli bir süre içinde belirli sayıda istek kabul edebilirsiniz
+  ratelimiter: #  rate limiter (oran sınırlayıcı) kullanarak belirli bir süre içinde belirli sayıda istek kabul edebilirsiniz
     instances:
       createProductLimiter:
         limit-refresh-period: 4s    # limitin ne sıklıkla yenileneceğini belirtir.
         limit-for-period: 2         #her dönem için izin verilen maksimum çağrı sayısını belirtir.
         timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir.
-
 
 
   #eureka:

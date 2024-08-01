@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class InventoryResponseDto {
     
+    private String id;
     private String productId;
     private int stockQuantity;
     private LocalDateTime lastUpdated;

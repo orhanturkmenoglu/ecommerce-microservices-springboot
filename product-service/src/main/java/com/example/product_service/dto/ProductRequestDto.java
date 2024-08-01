@@ -20,7 +20,6 @@ public class ProductRequestDto implements Serializable {
     private String id;
 
     @NotEmpty(message = "Product name cannot be empty ")
-    @Min(value = 2,message = "Product name must be at least 2 characters")
     private String name;
 
     @NotEmpty(message = "Product description cannot be empty ")

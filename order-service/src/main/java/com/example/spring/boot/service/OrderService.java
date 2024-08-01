@@ -9,7 +9,11 @@ import com.example.spring.boot.mapper.OrderMapper;
 import com.example.spring.boot.model.Inventory;
 import com.example.spring.boot.model.Order;
 import com.example.spring.boot.model.Product;
+import com.example.spring.boot.publisher.OrderMessageSender;
 import com.example.spring.boot.repository.OrderRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +30,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final InventoryClientService inventoryClientService;
     private final ProductClientService productClientService;
-
     private final OrderMapper orderMapper;
+    private final OrderMessageSender orderMessageSender;
 
     public List<OrderResponseDto> getAllOrders() {
         log.info("OrderService::getAllOrders started");
@@ -54,50 +57,72 @@ public class OrderService {
     // inventory-service ile iletişime geç stok kontrolü yap
     // stokda mevcut ise sipraiş başarılı.
     @Transactional
+    @Retry(name = "orderService", fallbackMethod = "fallbackCreateOrder")
+    @CircuitBreaker(name = "orderServiceBreaker", fallbackMethod = "fallbackCreateOrder")
+    @RateLimiter(name = "createOrderLimiter", fallbackMethod = "fallbackCreateOrder")
     public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) {
         log.info("Order::createOrder started");
 
+        // Feign Client ile senkron olarak Product ve Inventory servislerine çağrı yapıyoruz
         Product product = productClientService.getProductById(orderRequestDto.getProductId());
         Inventory inventory = inventoryClientService.getInventoryById(orderRequestDto.getInventoryId());
 
-        if (Objects.isNull(product)) {
-            throw new NullPointerException("Product with not found id :" + product.getId());
-        }
+        log.info("OrderResponseDto::createOrder - Order create with product id : {}", product.getId());
+        log.info("OrderResponseDto::createOrder - Order create with inventory id: {}", inventory.getId());
 
-        if (Objects.isNull(inventory)) {
-            throw new NullPointerException("Inventory with not found id :" + inventory.getId());
-        }
 
         // stok kontrolü yap.
         // sipariş oluştur
         if (!(inventory.getStockQuantity() >= orderRequestDto.getQuantity())) {
+            log.info("OrderResponseDto::createOrder - Order create with orderRequestDto.getQuantity : {}", orderRequestDto.getQuantity());
             throw new RuntimeException("Yeterli stok mevcut değil !");
         }
 
         OrderResponseDto savedOrder = getSaveOrder(orderRequestDto, product);
+        log.info("OrderResponseDto::createOrder - saved order: {}", savedOrder);
+
         Order mapToOrder = orderMapper.mapToOrder(savedOrder);
-
-
+        // Envanter güncelleme mesajını RabbitMQ ile gönderiyoruz
         updatedInventory(orderRequestDto, inventory);
 
+        log.info("OrderResponseDto::createOrder - mapToOrder : {}", mapToOrder);
         log.info("Order::createOrder finished.");
         return orderMapper.mapToOrderResponseDto(mapToOrder);
     }
 
+    public OrderResponseDto fallbackCreateOrder(OrderRequestDto orderRequestDto, Throwable t) {
+        log.error("Error creating order: ", t);
+        return new OrderResponseDto(); // or any fallback response
+    }
+
     @Transactional
+    @Retry(name = "orderService", fallbackMethod = "fallbackCreateOrder")
+    @CircuitBreaker(name = "orderServiceBreaker", fallbackMethod = "fallbackCreateOrder")
+    @RateLimiter(name = "createOrderLimiter", fallbackMethod = "fallbackCreateOrder")
     public OrderResponseDto updateOrder(String id, OrderRequestDto orderRequestDto) {
         log.info("OrderService::updateOrder started");
 
         OrderResponseDto existingOrder = getOrderById(id);
+        Inventory inventory = inventoryClientService.getInventoryById(orderRequestDto.getInventoryId());
+
+        log.info("OrderResponseDto::updateOrder - existingOrder with order id : {}", existingOrder.getId());
+        log.info("OrderResponseDto::updateOrder - inventory with id : {}", inventory.getId());
 
         existingOrder.setOrderStatus(orderRequestDto.getOrderStatus());
-        existingOrder.setTotalAmount(orderRequestDto.getTotalAmount());
+        existingOrder.setQuantity(orderRequestDto.getQuantity());
         existingOrder.setShippingAddress(orderRequestDto.getShippingAddress());
 
-        Order updateOrder = orderMapper.mapToOrder(existingOrder);
-        Order save = orderRepository.save(updateOrder);
+        Order mapToOrder = orderMapper.mapToOrder(existingOrder);
+        log.info("OrderResponseDto::updateOrder - mapToOrder  : {}", mapToOrder);
 
+        Order save = orderRepository.save(mapToOrder);
+        log.info("OrderResponseDto::updateOrder - save order : {}", save);
+
+
+        // Envanter güncelleme mesajını RabbitMQ ile gönderiyoruz
+        updatedInventory(orderRequestDto, inventory);
         log.info("OrderService::updateOrder finish");
+
         return orderMapper.mapToOrderResponseDto(save);
     }
 
@@ -114,9 +139,11 @@ public class OrderService {
 
 
     private void updatedInventory(OrderRequestDto orderRequestDto, Inventory inventory) {
-        // inventory - service ile iletişime geç stok güncelle.
+        // Envanter güncelleme işlemini RabbitMQ kullanarak mesaj kuyruğuna gönderiyoruz
+
         inventory.setStockQuantity(inventory.getStockQuantity() - orderRequestDto.getQuantity());
-        inventoryClientService.updateInventory(inventory);
+        // rabbit mq ile inventory stock güncelle.
+        orderMessageSender.sendInventoryUpdateMessage(inventory);
     }
 
     private OrderResponseDto getSaveOrder(OrderRequestDto orderRequestDto, Product product) {

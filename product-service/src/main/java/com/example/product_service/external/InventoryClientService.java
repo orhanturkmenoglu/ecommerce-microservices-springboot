@@ -1,6 +1,8 @@
 package com.example.product_service.external;
 
 
+import com.example.product_service.dto.InventoryRequestDto;
+import com.example.product_service.dto.InventoryResponseDto;
 import com.example.product_service.model.Inventory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +12,13 @@ public interface InventoryClientService {
 
 
     @PostMapping("/api/v1/inventories/create")
-    Inventory addInventory(@RequestBody Inventory inventory);
+    InventoryResponseDto addInventory(@RequestBody InventoryRequestDto inventoryRequestDto);
 
     @GetMapping("/api/v1/inventories/{productId}")
     Inventory getInventoryByProductId(@PathVariable("productId") String productId);
 
     @PutMapping("/api/v1/inventories/{inventoryId}")
-    Inventory updateInventory(@PathVariable("inventoryId") String inventoryId,Inventory inventory);
+    InventoryResponseDto updateInventory(@PathVariable("inventoryId") String inventoryId,@RequestBody InventoryRequestDto inventoryRequestDto);
 
     @DeleteMapping("/api/v1/inventories/{productId}")
     void deleteInventory(@PathVariable("productId") String productId);

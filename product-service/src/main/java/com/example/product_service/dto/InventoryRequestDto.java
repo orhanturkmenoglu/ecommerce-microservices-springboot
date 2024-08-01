@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class InventoryRequestDto {
 
     private String id;
-
+    private String productId;
     @NotNull(message = "Inventory stock quantity cannot be null")
     @Min(value = 0,message = "Inventory stock quantity must be 0")
     private int stockQuantity;

@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InventoryResponseDto {
+    private String id;
+    private String productId;
     private int stockQuantity;
 }

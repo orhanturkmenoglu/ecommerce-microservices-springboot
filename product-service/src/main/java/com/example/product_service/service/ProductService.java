@@ -1,5 +1,7 @@
 package com.example.product_service.service;
 
+import com.example.product_service.dto.InventoryRequestDto;
+import com.example.product_service.dto.InventoryResponseDto;
 import com.example.product_service.dto.ProductRequestDto;
 import com.example.product_service.dto.ProductResponseDto;
 import com.example.product_service.exception.InventoryNotFoundException;
@@ -8,6 +10,7 @@ import com.example.product_service.external.InventoryClientService;
 import com.example.product_service.mapper.ProductMapper;
 import com.example.product_service.model.Inventory;
 import com.example.product_service.model.Product;
+import com.example.product_service.publisher.ProductSendMessage;
 import com.example.product_service.repository.ProductRepository;
 import com.example.product_service.util.ProductMessage;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -26,13 +29,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final InventoryClientService inventoryClientService;
     private final ProductMapper productMapper;
+    private final ProductSendMessage productSendMessage;
 
     // create
     // ürün kaydederken inventory-service ile iletişime geçip stok miktarını kayıt altına alacaz.
@@ -45,32 +49,40 @@ public class ProductService {
         log.info("ProductService::createProduct started");
 
         Product product = productMapper.mapToProduct(productRequestDto);
-
+        log.info("ProductService::createProduct - Saving product: {}", productRequestDto);
         Product saveProduct = productRepository.save(product);
 
 
         if (saveProduct.getId() == null) {
+            log.error("ProductService::createProduct - Product ID is null after saving.");
             throw new IllegalStateException("Product ID should not be null after saving.");
         }
 
-        Inventory inventory = inventoryClientService.addInventory(saveProduct.getInventory());
-        saveProduct.setInventoryId(inventory.getId());
+        log.info("ProductService::createProduct - Creating inventory for product id: {}", saveProduct.getId());
+        log.info("ProductService::createProduct - Creating inventory for product: {}", saveProduct);
+        InventoryRequestDto inventoryRequestDto = productMapper.mapToInventoryRequestDto(saveProduct.getInventory());
+        inventoryRequestDto.setProductId(saveProduct.getId());
 
-        inventory.setProductId(saveProduct.getId());
+        log.info("ProductService::createProduct - save inventoryRequestDto  : {}", inventoryRequestDto);
+        log.info("ProductService::createProduct - save inventoryRequestDto with product id : {}", inventoryRequestDto.getProductId());
 
-        inventoryClientService.updateInventory(inventory.getId(), inventory);
+        // create inventory
+        InventoryResponseDto inventoryResponseDto = inventoryClientService.addInventory(inventoryRequestDto);
+        log.info("ProductService::createProduct - Updating inventory with inventory: {}", inventoryResponseDto.toString());
 
+        Inventory mapToInventory = productMapper.mapToInventory(inventoryResponseDto);
+        log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory.toString());
+        saveProduct.setInventory(mapToInventory);
+        saveProduct.setInventoryId(inventoryResponseDto.getId());
+
+        //  log.info("ProductService::createProduct - Updating inventory with product ID: {}", inventoryResponseDto.getId());
+
+        log.info("ProductService::createProduct - mapToProductRequestDto  product {}", saveProduct);
+        log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory.toString());
         log.info("ProductService::createProduct finished");
         return productMapper.mapToProductResponseDto(saveProduct);
     }
 
-    public ProductResponseDto inventoryServiceFallback(Exception exception) {
-        log.info("fallback is executed because servise is down :{}", exception.getMessage());
-        return ProductResponseDto.builder()
-                .name("IPHONE 13")
-                .description("This is product is created IPHONE 13 because some service is down")
-                .build();
-    }
 
     // read
     public List<ProductResponseDto> getProductsAll() throws ServiceUnavailableException {
@@ -109,6 +121,9 @@ public class ProductService {
     }
 
     // update
+    @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
+    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")  // tekrar deneme mekanizması.
+    @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
     public ProductResponseDto updateProductById(ProductRequestDto productRequestDto) {
         log.info("ProductService::updateProductById started");
         Product product = productRepository.findById(productRequestDto.getId()).orElseThrow(() ->
@@ -118,8 +133,12 @@ public class ProductService {
 
         // inventory-service stok takibini güncelle.
 
+        Inventory inventory = updatedProduct.getInventory();
+
+        InventoryRequestDto mapToInventoryRequestDto = productMapper.mapToInventoryRequestDto(inventory);
+
         inventoryClientService.updateInventory(updatedProduct.getInventoryId(),
-                updatedProduct.getInventory());
+                mapToInventoryRequestDto);
 
         log.info("ProductService::updateProductById finished");
         return productMapper.mapToProductResponseDto(updatedProduct);
@@ -224,6 +243,14 @@ public class ProductService {
         product.setCategory(productRequestDto.getCategory());
         product.setInventoryId(productRequestDto.getInventoryRequestDto().getId());
         return productRepository.save(product);
+    }
+
+    public ProductResponseDto inventoryServiceFallback(Exception exception) {
+        log.info("fallback is executed because servise is down :{}", exception.getMessage());
+        return ProductResponseDto.builder()
+                .name("IPHONE 13")
+                .description("This product is created as a fallback because some service is down")
+                .build();
     }
 
 }

@@ -8,10 +8,11 @@ import com.example.inventory_service.model.Inventory;
 import com.example.inventory_service.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -21,18 +22,30 @@ public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
+    private final RabbitTemplate rabbitTemplate;
+
+
+    @Value("${rabbit.mq.routing.key.response}")
+    private String inventoryResponseRoutingKey;
+
+    @Value("${rabbit.mq.exchange.response}")
+    private String inventoryResponseExchange;
 
     @Transactional
     public InventoryResponseDto addInventory(InventoryRequestDto inventoryRequestDto) {
 
         log.info("InventoryService::addInventory started");
-
-        inventoryRequestDto.setLastUpdated(LocalDateTime.now());
-
         Inventory inventory = inventoryMapper.mapToInventory(inventoryRequestDto);
+
+        log.info("InventoryService::addInventory inventory :{}", inventory);
         Inventory savedInventory = inventoryRepository.save(inventory);
 
+        log.info("InventoryService::addInventory savedInventory :{}", savedInventory);
+        // geri dönüş olarak inventory gönder.
+        rabbitTemplate.convertAndSend(inventoryResponseExchange,inventoryResponseRoutingKey,savedInventory);
+
         log.info("InventoryService::addInventory finished");
+
         return inventoryMapper.mapToInventoryResponseDto(savedInventory);
     }
 
@@ -69,14 +82,12 @@ public class InventoryService {
     }
 
 
+    @Transactional
     public InventoryResponseDto updateInventory(String inventoryId, InventoryRequestDto inventoryRequestDto) {
         log.info("InventoryService::updateInventory started");
 
         InventoryResponseDto inventoryById = getInventoryById(inventoryId);
-
-        inventoryById.setProductId(inventoryRequestDto.getProductId());
         inventoryById.setStockQuantity(inventoryRequestDto.getStockQuantity());
-        inventoryById.setLastUpdated(LocalDateTime.now());
 
         Inventory mapToInventory = inventoryMapper.mapToInventory(inventoryById);
         Inventory updatedInventory = inventoryRepository.save(mapToInventory);

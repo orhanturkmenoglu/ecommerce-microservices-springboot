@@ -17,7 +17,7 @@ import java.util.List;
 public class InventoryController {
 
     private final InventoryService inventoryService;
-
+    
 
     @PostMapping("/create")
     public ResponseEntity<InventoryResponseDto> addInventory(@Valid @RequestBody InventoryRequestDto inventoryRequestDto) {
