@@ -9,7 +9,6 @@ import com.example.inventory_service.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +24,6 @@ public class InventoryService {
     private final RabbitTemplate rabbitTemplate;
 
 
-    @Value("${rabbit.mq.routing.key.response}")
-    private String inventoryResponseRoutingKey;
-
-    @Value("${rabbit.mq.exchange.response}")
-    private String inventoryResponseExchange;
-
     @Transactional
     public InventoryResponseDto addInventory(InventoryRequestDto inventoryRequestDto) {
 
@@ -41,8 +34,6 @@ public class InventoryService {
         Inventory savedInventory = inventoryRepository.save(inventory);
 
         log.info("InventoryService::addInventory savedInventory :{}", savedInventory);
-        // geri dönüş olarak inventory gönder.
-        rabbitTemplate.convertAndSend(inventoryResponseExchange,inventoryResponseRoutingKey,savedInventory);
 
         log.info("InventoryService::addInventory finished");
 

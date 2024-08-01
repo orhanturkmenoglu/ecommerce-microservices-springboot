@@ -26,7 +26,7 @@ public class InventoryMessageListener {
             updateInventory(inventory);
         } catch (Exception e) {
             log.error("Error processing message", e);
-          //  throw new AmqpRejectAndDontRequeueException("Error processing message", e);
+            throw new AmqpRejectAndDontRequeueException("Error processing message", e);
         }
     }
 

@@ -25,6 +25,10 @@ spring:
     port: 5672
 
 
+  zipkin:
+    base-url: http://localhost:9412
+
+
 rabbit:
   mq:
     exchange:
