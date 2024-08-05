@@ -16,6 +16,7 @@ spring:
       hibernate:
         format_sql: true
 
+
   rabbitmq:
     host: localhost
     username: guest
