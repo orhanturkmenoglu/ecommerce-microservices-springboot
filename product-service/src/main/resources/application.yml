@@ -18,6 +18,7 @@ spring:
       hibernate:
         format_sql: true
 
+
   rabbitmq:
     host: localhost
     username: guest
@@ -27,6 +28,7 @@ spring:
 
   zipkin:
     base-url: http://localhost:9412
+
 
 
 rabbit:
@@ -59,6 +61,11 @@ management:
   endpoint:
     health:
       show-details: always # : Sağlık endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir.
+  tracing: #zipkin config
+    sampling:
+      probability: 1.0  #her isteği takip edecek
+
+
 
 resilience4j:
   circuitbreaker:
@@ -87,7 +94,7 @@ resilience4j:
       createProductLimiter:
         limit-refresh-period: 4s    # limitin ne sıklıkla yenileneceğini belirtir.
         limit-for-period: 2         #her dönem için izin verilen maksimum çağrı sayısını belirtir.
-        timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir.
+        timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir
 
 
   #eureka:
@@ -100,3 +107,4 @@ resilience4j:
 #    service-url:
 #      defaultZone : http://localhost:8761/eureka
 
+#zipkin

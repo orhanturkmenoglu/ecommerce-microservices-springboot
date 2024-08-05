@@ -49,7 +49,9 @@ management:
   endpoint:
     health:
       show-details: always # : Sağlık endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir.
-
+  tracing: #zipkin config
+    sampling:
+      probability: 1.0  #her isteği takip edeceç
 resilience4j:
   circuitbreaker:
     instances:

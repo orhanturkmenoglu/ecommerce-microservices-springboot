@@ -16,7 +16,6 @@ spring:
       hibernate:
         format_sql: true
 
-
   rabbitmq:
     host: localhost
     username: guest
@@ -40,6 +39,19 @@ rabbit:
   config:
     import: optional:configserver:http://localhost:8084
 
+management:
+  #Bu ayar, Actuator tarafından sunulan HTTP endpoint'lerini (veya yönlendiricilerini) hangi durumda açacağını belirtir. Özellikle web altındaki exposure bölümü, bu endpoint'lerin hangi koşullarda dış dünyaya (HTTP istemcilerine) açılacağını tanımlar.
+  endpoints:
+    web:
+      exposure:
+        include: health  # Yani, /actuator/health endpoint'i HTTP isteklerine cevap verecektir.
+  #Bu ayar, uygulamanızın sağlık (health) endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir. Özellikle health altındaki show-details parametresi, bu endpoint'in ne kadar ayrıntılı bilgi sunacağını kontrol eder.
+  endpoint:
+    health:
+      show-details: always # : Sağlık endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir.
+  tracing: #zipkin Tracing (İzleme) Yapılandırması
+    sampling:
+      probability: 1.0  #tüm isteklerin izleneceği anlamına gelir
 
 #eureka:
 #  instance:

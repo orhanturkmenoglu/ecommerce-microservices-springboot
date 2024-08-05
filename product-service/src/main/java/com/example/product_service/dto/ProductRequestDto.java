@@ -1,7 +1,6 @@
 package com.example.product_service.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -29,7 +28,7 @@ public class ProductRequestDto implements Serializable {
     private String category;
 
     @NotNull(message = "Product price cannot be null")
-    @Min(message = "Product price must be greater than zero",value = 0)
+    @Min(message = "Product price must be greater than zero", value = 0)
     private double price;
 
 

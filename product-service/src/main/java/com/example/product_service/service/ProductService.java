@@ -10,7 +10,6 @@ import com.example.product_service.external.InventoryClientService;
 import com.example.product_service.mapper.ProductMapper;
 import com.example.product_service.model.Inventory;
 import com.example.product_service.model.Product;
-import com.example.product_service.publisher.ProductSendMessage;
 import com.example.product_service.repository.ProductRepository;
 import com.example.product_service.util.ProductMessage;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -36,7 +35,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final InventoryClientService inventoryClientService;
     private final ProductMapper productMapper;
-    private final ProductSendMessage productSendMessage;
 
     // create
     // ürün kaydederken inventory-service ile iletişime geçip stok miktarını kayıt altına alacaz.
@@ -146,7 +144,6 @@ public class ProductService {
 
 
     // delete
-
     public String deleteProductById(String productId) {
         log.info("ProductService::deleteProductById started");
 
@@ -165,7 +162,6 @@ public class ProductService {
 
 
     // Get product names by price range using stream api
-
     public List<ProductResponseDto> getProductByPriceRange(double minPrice, double maxPrice) {
         log.info("ProductService::getProductNamesByPriceRange started");
 
@@ -181,7 +177,6 @@ public class ProductService {
     }
 
     // Get product names by price range using stream api
-
     public List<ProductResponseDto> getProductByPriceGreaterThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceGreaterThanEqual started");
 
@@ -196,7 +191,6 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-
     public List<ProductResponseDto> getProductByPriceLessThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceLessThanEqual started");
 
@@ -209,7 +203,6 @@ public class ProductService {
                 .map(productMapper::mapToProductResponseDto)
                 .collect(Collectors.toList());
     }
-
 
     public List<ProductResponseDto> getProductByQuantity(int quantity) {
         log.info("ProductService::getProductByQuantity started");
