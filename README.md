@@ -26,7 +26,7 @@ Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerç
 * product-service: Ürün bilgilerini yönetir.
 * inventory-service: Envanter ve stok seviyelerini yönetir.
 * order-service: Müşteri siparişlerini yönetir.
-* payment-service: Sipariş ödemelerini yönetir.
+* payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
 
 🌐 Endpointler:
 
