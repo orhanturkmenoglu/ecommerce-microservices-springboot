@@ -1,6 +1,7 @@
-package com.example.product_service.publisher;
+package com.example.payment_service.publisher;
 
-import com.example.product_service.model.Inventory;
+
+import com.example.payment_service.model.Inventory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -10,20 +11,18 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProductSendMessage {
+public class PaymentMessageSender {
 
     private final RabbitTemplate rabbitTemplate;
 
-
-    @Value("${rabbit.mq.routing.create.product}")
-    private String routingKeyCreateProduct;
+    @Value("${rabbit.mq.routing.key}")
+    private String routingKey;
 
     @Value("${rabbit.mq.exchange.name}")
     private String exchange;
 
-    public void sendMessage(Inventory inventory) {
+    public void sendInventoryUpdateMessage(Inventory inventory) {
         log.info(String.format("SEND MESSAGE -> : %s", inventory));
-        rabbitTemplate.convertAndSend(exchange, routingKeyCreateProduct, inventory);
-
+        rabbitTemplate.convertAndSend(exchange, routingKey, inventory);
     }
 }

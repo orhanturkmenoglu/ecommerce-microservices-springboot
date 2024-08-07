@@ -1,5 +1,6 @@
-package com.example.product_service.dto;
+package com.example.product_service.dto.productDto;
 
+import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

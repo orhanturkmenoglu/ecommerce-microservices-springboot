@@ -1,10 +1,10 @@
 package com.example.product_service.mapper;
 
 
-import com.example.product_service.dto.InventoryRequestDto;
-import com.example.product_service.dto.InventoryResponseDto;
-import com.example.product_service.dto.ProductRequestDto;
-import com.example.product_service.dto.ProductResponseDto;
+import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
+import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
+import com.example.product_service.dto.productDto.ProductRequestDto;
+import com.example.product_service.dto.productDto.ProductResponseDto;
 import com.example.product_service.model.Inventory;
 import com.example.product_service.model.Product;
 import org.springframework.stereotype.Component;

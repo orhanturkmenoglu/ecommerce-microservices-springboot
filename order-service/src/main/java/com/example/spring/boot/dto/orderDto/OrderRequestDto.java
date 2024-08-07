@@ -1,4 +1,4 @@
-package com.example.spring.boot.dto;
+package com.example.spring.boot.dto.orderDto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,16 +23,12 @@ public class OrderRequestDto implements Serializable {
     @NotEmpty(message = "Order inventoryId cannot be empty")
     private String inventoryId;
 
-    private LocalDateTime orderDate; // Date and time when the order was placed
-
-    @NotEmpty(message = "Order orderStatus cannot be empty")
-    private String orderStatus; // Current status of the order
+    private LocalDateTime orderDate;
 
     @NotNull(message = "Order quantity cannot be null")
-    @Min(value = 0,message = "Order quantity must be greater than zero")
+    @Min(value = 0, message = "Order quantity must be greater than zero")
     private int quantity;
-    private double totalAmount; // Total amount for the order
 
     @NotEmpty(message = "Order shippingAddress cannot be null")
-    private String shippingAddress; // Address where the order will be shipped
+    private String shippingAddress;
 }

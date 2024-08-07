@@ -1,7 +1,7 @@
 package com.example.spring.boot.controller;
 
-import com.example.spring.boot.dto.OrderRequestDto;
-import com.example.spring.boot.dto.OrderResponseDto;
+import com.example.spring.boot.dto.orderDto.OrderRequestDto;
+import com.example.spring.boot.dto.orderDto.OrderResponseDto;
 import com.example.spring.boot.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

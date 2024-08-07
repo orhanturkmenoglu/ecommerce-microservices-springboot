@@ -21,22 +21,10 @@ public class RabbitMQConfig {
     @Value("${rabbit.mq.queue.name}")
     private String queue;
 
-    @Value("${rabbit.mq.queue.create.product}")
-    private String queueCreateProduct;
-
-    @Value("${rabbit.mq.routing.create.product}")
-    private String routingKeyCreateProduct;
-
-
 
     @Bean
     public Queue queue() {
         return new Queue(queue);
-    }
-
-    @Bean
-    public Queue queueCreateProduct() {
-        return new Queue(queueCreateProduct);
     }
 
 
@@ -54,13 +42,6 @@ public class RabbitMQConfig {
                 .with(routingKey);
     }
 
-    @Bean
-    public Binding bindingCreateProduct() {
-        return BindingBuilder
-                .bind(queueCreateProduct())
-                .to(exchange())
-                .with(routingKeyCreateProduct);
-    }
 
     @Bean
     public MessageConverter converter() {
@@ -74,7 +55,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(converter());
         return rabbitTemplate;
     }
-
 
 
 }

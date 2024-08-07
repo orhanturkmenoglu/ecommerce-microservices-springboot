@@ -2,6 +2,7 @@ package com.example.inventory_service.controller;
 
 import com.example.inventory_service.dto.InventoryRequestDto;
 import com.example.inventory_service.dto.InventoryResponseDto;
+import com.example.inventory_service.dto.InventoryUpdateRequestDto;
 import com.example.inventory_service.service.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class InventoryController {
     }
 
     @PutMapping("/{inventoryId}")
-    public ResponseEntity<InventoryResponseDto> updateInventory(@PathVariable String inventoryId, @RequestBody InventoryRequestDto inventoryRequestDto) {
+    public ResponseEntity<InventoryResponseDto> updateInventory(@PathVariable String inventoryId, @RequestBody InventoryUpdateRequestDto inventoryRequestDto) {
         InventoryResponseDto inventoryResponseDto = inventoryService.updateInventory(inventoryId, inventoryRequestDto);
         return ResponseEntity.ok(inventoryResponseDto);
     }

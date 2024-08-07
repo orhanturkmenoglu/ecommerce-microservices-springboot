@@ -12,6 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class Inventory implements Serializable {
+
     private String id;
     private String productId;
     private int stockQuantity;

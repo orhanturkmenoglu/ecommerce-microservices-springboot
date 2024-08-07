@@ -7,13 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InventoryRequestDto {
+public class InventoryRequestDto implements Serializable {
 
     private String id;
 
@@ -21,7 +22,6 @@ public class InventoryRequestDto {
     private String productId;
 
     @NotNull(message = "Inventory stock quantity cannot be null")
- //   @Min(value = 0, message = "Inventory stock quantity must be greater than zero")
     private int stockQuantity;
 
     private LocalDateTime lastUpdated;

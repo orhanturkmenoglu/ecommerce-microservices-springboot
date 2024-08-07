@@ -1,6 +1,7 @@
 package com.example.inventory_service.consumer;
 
 import com.example.inventory_service.dto.InventoryRequestDto;
+import com.example.inventory_service.dto.InventoryUpdateRequestDto;
 import com.example.inventory_service.mapper.InventoryMapper;
 import com.example.inventory_service.model.Inventory;
 import com.example.inventory_service.service.InventoryService;
@@ -30,27 +31,11 @@ public class InventoryMessageListener {
         }
     }
 
-    @RabbitListener(queues = {"${rabbit.mq.queue.create.product}"})
-    public void receiveInventoryCreateMessage(Inventory inventory) {
-        log.info(String.format("RECEIVED MESSAGE -> %s", inventory.toString()));
-        try {
-            createInventory(inventory);
-        } catch (Exception e) {
-            log.error("Error processing message", e);
-            throw new AmqpRejectAndDontRequeueException("Error processing message", e);
-        }
-    }
-
 
     private void updateInventory(Inventory inventory) {
-        InventoryRequestDto inventoryRequestDto = inventoryMapper.mapToInventoryRequestDto(inventory);
-        log.info("InventoryMessageListener::updateInventory - inventoryRequestDto  : {}", inventoryRequestDto);
-        inventoryService.updateInventory(inventory.getId(), inventoryRequestDto);
+        InventoryUpdateRequestDto inventoryUpdateRequestDto = inventoryMapper.mapToInventoryUpdateRequestDto(inventory);
+        log.info("InventoryMessageListener::updateInventory - inventoryRequestDto  : {}", inventoryUpdateRequestDto);
+        inventoryService.updateInventory(inventory.getId(), inventoryUpdateRequestDto);
     }
 
-    private void createInventory(Inventory inventory) {
-        InventoryRequestDto inventoryRequestDto = inventoryMapper.mapToInventoryRequestDto(inventory);
-        log.info("InventoryMessageListener::createInventory - inventoryRequestDto  : {}", inventoryRequestDto);
-        inventoryService.addInventory(inventoryRequestDto);
-    }
 }

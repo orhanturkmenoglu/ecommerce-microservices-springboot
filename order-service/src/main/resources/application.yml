@@ -18,20 +18,6 @@ spring:
       hibernate:
         format_sql: true
 
-  rabbitmq:
-    host: localhost
-    username: guest
-    password: guest
-    port: 5672
-
-rabbit:
-  mq:
-    exchange:
-      name: e_commerce_exchange
-    routing:
-      key: e_commerce_routing_key
-    queue:
-      name: e_commerce_queue
 
   config:
     import: optional:configserver:http://localhost:8084
@@ -91,8 +77,3 @@ resilience4j:
   #    fetch-registry: true
   #    service-url:
   #      defaultZone : http://localhost:8761/eureka
-
-
-  cloud:
-    compatibility-verifier:
-      enabled: false

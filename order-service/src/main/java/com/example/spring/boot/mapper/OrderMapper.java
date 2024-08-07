@@ -1,7 +1,8 @@
 package com.example.spring.boot.mapper;
 
-import com.example.spring.boot.dto.OrderRequestDto;
-import com.example.spring.boot.dto.OrderResponseDto;
+import com.example.spring.boot.dto.orderDto.OrderRequestDto;
+import com.example.spring.boot.dto.orderDto.OrderResponseDto;
+import com.example.spring.boot.enums.OrderStatus;
 import com.example.spring.boot.model.Order;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ public class OrderMapper {
         return Order.builder()
                 .productId(orderRequestDto.getProductId())
                 .inventoryId(orderRequestDto.getInventoryId())
-                .orderStatus(orderRequestDto.getOrderStatus())
                 .quantity(orderRequestDto.getQuantity())
                 .orderDate(LocalDateTime.now())
                 .shippingAddress(orderRequestDto.getShippingAddress())
@@ -28,9 +28,10 @@ public class OrderMapper {
                 .id(orderResponseDto.getId())
                 .productId(orderResponseDto.getProductId())
                 .inventoryId(orderResponseDto.getInventoryId())
-                .orderStatus(orderResponseDto.getOrderStatus())
+                .orderStatus(OrderStatus.PROCESSING)
                 .quantity(orderResponseDto.getQuantity())
                 .orderDate(LocalDateTime.now())
+                .totalAmount(orderResponseDto.getTotalAmount())
                 .shippingAddress(orderResponseDto.getShippingAddress())
                 .build();
     }
@@ -40,9 +41,10 @@ public class OrderMapper {
                 .id(order.getId())
                 .productId(order.getProductId())
                 .inventoryId(order.getInventoryId())
-                .orderStatus(order.getOrderStatus())
+                .orderStatus(OrderStatus.PROCESSING)
                 .quantity(order.getQuantity())
                 .orderDate(LocalDateTime.now())
+                .totalAmount(order.getTotalAmount())
                 .shippingAddress(order.getShippingAddress())
                 .build();
     }

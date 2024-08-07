@@ -1,6 +1,6 @@
-package com.example.product_service.dto;
+package com.example.product_service.dto.productDto;
 
-import com.example.product_service.model.Inventory;
+import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +13,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class ProductResponseDto implements Serializable {
+
     private String id;
     private String inventoryId;
     private String name;

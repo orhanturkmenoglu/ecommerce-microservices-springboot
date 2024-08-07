@@ -1,9 +1,7 @@
 package com.example.spring.boot.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.spring.boot.enums.OrderStatus;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,10 +25,13 @@ public class Order implements Serializable {
     private String id;
     private String productId;
     private String inventoryId;
-    private LocalDateTime orderDate; // Date and time when the order was placed
-    private String orderStatus; // Current status of the order
+    private LocalDateTime orderDate;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
+
     private int quantity;
-    private double totalAmount; // Total amount for the order
-    private String shippingAddress; // Address where the order will be shipped
+    private double totalAmount;
+    private String shippingAddress;
 
 }

@@ -1,4 +1,4 @@
-package com.example.product_service.config;
+package com.example.payment_service.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -21,29 +21,16 @@ public class RabbitMQConfig {
     @Value("${rabbit.mq.queue.name}")
     private String queue;
 
-
-    @Value("${rabbit.mq.queue.create.product}")
-    private String queueCreateProduct;
-
-    @Value("${rabbit.mq.routing.create.product}")
-    private String routingKeyCreateProduct;
     @Bean
     public Queue queue() {
         return new Queue(queue);
     }
-
-    @Bean
-    public Queue queueCreateProduct() {
-        return new Queue(queueCreateProduct);
-    }
-
 
 
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(exchange);
     }
-
 
     @Bean
     public Binding binding() {
@@ -54,18 +41,10 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingCreateProduct() {
-        return BindingBuilder
-                .bind(queueCreateProduct())
-                .to(exchange())
-                .with(routingKeyCreateProduct);
-    }
-
-
-    @Bean
     public MessageConverter converter() {
         return new Jackson2JsonMessageConverter();
     }
+
 
 
     @Bean
@@ -74,5 +53,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(converter());
         return rabbitTemplate;
     }
+
 
 }

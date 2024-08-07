@@ -5,11 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Inventory {
+public class Inventory implements Serializable {
+
     private String id;
     private String productId;
     private int stockQuantity;

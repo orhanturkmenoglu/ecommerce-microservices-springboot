@@ -2,6 +2,7 @@ package com.example.inventory_service.mapper;
 
 import com.example.inventory_service.dto.InventoryRequestDto;
 import com.example.inventory_service.dto.InventoryResponseDto;
+import com.example.inventory_service.dto.InventoryUpdateRequestDto;
 import com.example.inventory_service.model.Inventory;
 import org.springframework.stereotype.Component;
 
@@ -56,5 +57,12 @@ public class InventoryMapper {
         return inventoryList.stream()
                 .map(this::mapToInventoryResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    public InventoryUpdateRequestDto mapToInventoryUpdateRequestDto(Inventory inventory) {
+        return InventoryUpdateRequestDto.builder()
+                .newQuantity(inventory.getStockQuantity())
+                .lastUpdated(LocalDateTime.now())
+                .build();
     }
 }

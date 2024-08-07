@@ -2,13 +2,13 @@ package com.example.inventory_service.service;
 
 import com.example.inventory_service.dto.InventoryRequestDto;
 import com.example.inventory_service.dto.InventoryResponseDto;
+import com.example.inventory_service.dto.InventoryUpdateRequestDto;
 import com.example.inventory_service.exception.ProductNotFoundException;
 import com.example.inventory_service.mapper.InventoryMapper;
 import com.example.inventory_service.model.Inventory;
 import com.example.inventory_service.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +20,8 @@ import java.util.List;
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
+    
     private final InventoryMapper inventoryMapper;
-    private final RabbitTemplate rabbitTemplate;
 
 
     @Transactional
@@ -74,11 +74,11 @@ public class InventoryService {
 
 
     @Transactional
-    public InventoryResponseDto updateInventory(String inventoryId, InventoryRequestDto inventoryRequestDto) {
+    public InventoryResponseDto updateInventory(String inventoryId, InventoryUpdateRequestDto inventoryUpdateRequestDto) {
         log.info("InventoryService::updateInventory started");
 
         InventoryResponseDto inventoryById = getInventoryById(inventoryId);
-        inventoryById.setStockQuantity(inventoryRequestDto.getStockQuantity());
+        inventoryById.setStockQuantity(inventoryUpdateRequestDto.getNewQuantity());
 
         Inventory mapToInventory = inventoryMapper.mapToInventory(inventoryById);
         Inventory updatedInventory = inventoryRepository.save(mapToInventory);

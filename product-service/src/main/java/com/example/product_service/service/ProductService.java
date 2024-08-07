@@ -1,9 +1,9 @@
 package com.example.product_service.service;
 
-import com.example.product_service.dto.InventoryRequestDto;
-import com.example.product_service.dto.InventoryResponseDto;
-import com.example.product_service.dto.ProductRequestDto;
-import com.example.product_service.dto.ProductResponseDto;
+import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
+import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
+import com.example.product_service.dto.productDto.ProductRequestDto;
+import com.example.product_service.dto.productDto.ProductResponseDto;
 import com.example.product_service.exception.InventoryNotFoundException;
 import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.external.InventoryClientService;
@@ -33,16 +33,16 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    
     private final InventoryClientService inventoryClientService;
+    
     private final ProductMapper productMapper;
 
     // create
-    // ürün kaydederken inventory-service ile iletişime geçip stok miktarını kayıt altına alacaz.
     @Transactional
     @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
-    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")  // tekrar deneme mekanizması.
+    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback") 
     @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
-    // rate limiter (oran sınırlayıcı) kullanarak belirli bir süre içinde belirli sayıda istek kabul edebilirsiniz
     public ProductResponseDto createProduct(ProductRequestDto productRequestDto) {
         log.info("ProductService::createProduct started");
 
@@ -73,10 +73,9 @@ public class ProductService {
         saveProduct.setInventory(mapToInventory);
         saveProduct.setInventoryId(inventoryResponseDto.getId());
 
-        //  log.info("ProductService::createProduct - Updating inventory with product ID: {}", inventoryResponseDto.getId());
 
         log.info("ProductService::createProduct - mapToProductRequestDto  product {}", saveProduct);
-        log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory.toString());
+        log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory);
         log.info("ProductService::createProduct finished");
         return productMapper.mapToProductResponseDto(saveProduct);
     }
@@ -97,7 +96,6 @@ public class ProductService {
     }
 
     // getById
-    // ürün kimliği ile stok bilgilerini getir.
     public ProductResponseDto getProductById(String productId) {
         log.info("ProductService::getProductById started");
         Product product = productRepository.findById(productId).orElseThrow(()
@@ -108,7 +106,6 @@ public class ProductService {
     }
 
     // getById
-    // stok kimliği ile stok bilgilerini getir.
     public ProductResponseDto getInventoryById(String inventoryId) {
         log.info("ProductService::getInventoryById started");
         Product product = productRepository.findByInventoryId(inventoryId).orElseThrow(()
@@ -120,20 +117,26 @@ public class ProductService {
 
     // update
     @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
-    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")  // tekrar deneme mekanizması.
+    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
     public ProductResponseDto updateProductById(ProductRequestDto productRequestDto) {
         log.info("ProductService::updateProductById started");
+
         Product product = productRepository.findById(productRequestDto.getId()).orElseThrow(() ->
                 new NullPointerException(ProductMessage.PRODUCT_NOT_FOUND + productRequestDto.getId()));
+        log.info("ProductService::updateProductById - product {}", product);
 
         Product updatedProduct = getUpdatedProduct(productRequestDto, product);
+        log.info("ProductService::updateProductById - updatedProduct {}", updatedProduct);
+
 
         // inventory-service stok takibini güncelle.
-
         Inventory inventory = updatedProduct.getInventory();
-
         InventoryRequestDto mapToInventoryRequestDto = productMapper.mapToInventoryRequestDto(inventory);
+
+        log.info("ProductService::updateProductById - inventory {}", inventory);
+        log.info("ProductService::updateProductById - mapToInventoryRequestDto {}", mapToInventoryRequestDto);
+
 
         inventoryClientService.updateInventory(updatedProduct.getInventoryId(),
                 mapToInventoryRequestDto);
@@ -176,7 +179,6 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    // Get product names by price range using stream api
     public List<ProductResponseDto> getProductByPriceGreaterThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceGreaterThanEqual started");
 
@@ -238,7 +240,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public ProductResponseDto inventoryServiceFallback(Exception exception) {
+    private ProductResponseDto inventoryServiceFallback(Exception exception) {
         log.info("fallback is executed because servise is down :{}", exception.getMessage());
         return ProductResponseDto.builder()
                 .name("IPHONE 13")
