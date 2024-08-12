@@ -23,6 +23,8 @@ public class Payment implements Serializable {
     @Id
     private String id;
 
+    private String customerId;
+
     private String orderId;
 
     private Double amount;

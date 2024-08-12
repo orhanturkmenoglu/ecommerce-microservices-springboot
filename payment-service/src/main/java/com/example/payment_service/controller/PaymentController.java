@@ -23,9 +23,25 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponseDto);
     }
 
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<PaymentResponseDto> getPaymentById(@PathVariable("paymentId") String paymentId) {
+        PaymentResponseDto paymentById = paymentService.getPaymentById(paymentId);
+        return ResponseEntity.ok(paymentById);
+    }
+
     @PutMapping
     public ResponseEntity<PaymentResponseDto> updatePayment(@RequestBody PaymentUpdateRequestDto paymentUpdateRequestDto) {
         PaymentResponseDto paymentResponseDto = paymentService.updatePayment(paymentUpdateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponseDto);
+    }
+
+    @DeleteMapping("/{paymentId}")
+    public ResponseEntity<Void> deleteByPaymentId(@PathVariable("paymentId") String paymentId) {
+        try {
+            paymentService.deleteByPaymentId(paymentId);
+            return ResponseEntity.noContent().build();
+        } catch (NullPointerException e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
     }
 }

@@ -10,6 +10,7 @@
         <module name="config-server" />
         <module name="inventory-service" />
         <module name="payment-service" />
+        <module name="customer-service" />
         <module name="api-gateway" />
         <module name="product-service" />
         <module name="order-service" />
@@ -21,6 +22,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="config-server" options="-parameters" />
+      <module name="customer-service" options="-parameters" />
       <module name="inventory-service" options="-parameters" />
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />

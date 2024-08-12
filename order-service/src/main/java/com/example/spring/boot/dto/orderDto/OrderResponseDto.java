@@ -1,6 +1,7 @@
 package com.example.spring.boot.dto.orderDto;
 
 import com.example.spring.boot.enums.OrderStatus;
+import com.example.spring.boot.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,5 @@ public class OrderResponseDto implements Serializable {
     private OrderStatus orderStatus;
     private int quantity;
     private double totalAmount;
-    private String shippingAddress;
+    private Address shippingAddress;
 }

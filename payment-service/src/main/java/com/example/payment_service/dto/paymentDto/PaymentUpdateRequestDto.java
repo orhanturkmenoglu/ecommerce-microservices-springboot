@@ -8,11 +8,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PaymentUpdateRequestDto {
+public class PaymentUpdateRequestDto implements Serializable {
+
+    @NotEmpty(message = "Payment orderId cannot be empty")
+    private String customerId;
 
     @NotEmpty(message = "Payment orderId cannot be empty")
     private String orderId;

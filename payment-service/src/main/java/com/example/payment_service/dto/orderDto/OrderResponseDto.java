@@ -1,5 +1,6 @@
 package com.example.payment_service.dto.orderDto;
 
+import com.example.payment_service.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +21,5 @@ public class OrderResponseDto implements Serializable {
     private String orderStatus;
     private int quantity;
     private double totalAmount;
-    private String shippingAddress;
+    private Address shippingAddress;
 }

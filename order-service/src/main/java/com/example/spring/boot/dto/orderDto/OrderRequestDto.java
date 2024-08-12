@@ -1,5 +1,6 @@
 package com.example.spring.boot.dto.orderDto;
 
+import com.example.spring.boot.model.Address;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,10 @@ import java.time.LocalDateTime;
 @Builder
 public class OrderRequestDto implements Serializable {
 
+
+    @NotEmpty(message = "Order customer Id cannot be empty")
+    private String customerId;
+
     @NotEmpty(message = "Order productId cannot be empty")
     private String productId;
 
@@ -29,6 +34,5 @@ public class OrderRequestDto implements Serializable {
     @Min(value = 0, message = "Order quantity must be greater than zero")
     private int quantity;
 
-    @NotEmpty(message = "Order shippingAddress cannot be null")
-    private String shippingAddress;
+    private Address shippingAddress;
 }

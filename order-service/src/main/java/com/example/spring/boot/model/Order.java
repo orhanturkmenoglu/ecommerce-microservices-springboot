@@ -1,6 +1,7 @@
 package com.example.spring.boot.model;
 
 import com.example.spring.boot.enums.OrderStatus;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +33,8 @@ public class Order implements Serializable {
 
     private int quantity;
     private double totalAmount;
-    private String shippingAddress;
+
+    @Embedded
+    private Address shippingAddress;
 
 }

@@ -11,6 +11,7 @@ public class PaymentMapper {
 
     public Payment mapToPayment(PaymentRequestDto paymentRequestDto) {
         return Payment.builder()
+                .customerId(paymentRequestDto.getCustomerId())
                 .orderId(paymentRequestDto.getOrderId())
                 .paymentStatus(PaymentStatus.COMPLETED)
                 .paymentType(paymentRequestDto.getPaymentType())
@@ -20,9 +21,11 @@ public class PaymentMapper {
     public PaymentResponseDto mapToPaymentResponseDto(Payment payment) {
         return PaymentResponseDto.builder()
                 .id(payment.getId())
+                .customerId(payment.getCustomerId())
                 .orderId(payment.getOrderId())
                 .paymentStatus(payment.getPaymentStatus())
                 .amount(payment.getAmount())
+                .paymentType(payment.getPaymentType())
                 .build();
     }
 }

@@ -14,7 +14,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PaymentRequestDto  implements Serializable {
+public class PaymentRequestDto implements Serializable {
+
+    @NotEmpty(message = "Payment customer  id cannot be empty")
+    private String customerId;
 
     @NotEmpty(message = "Payment order id cannot be empty")
     private String orderId;
