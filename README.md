@@ -16,17 +16,17 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * Okta (Yakında): Kimlik doğrulama ve yetkilendirme için güvenli ve kullanıcı dostu bir çözüm.
 
 
-📌 Proje Özeti:
-Bu proje, servis kaydı, API geçidi, hata toleransı ve merkezi yapılandırma gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, ürün yönetimi, envanter yönetimi ve sipariş yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır.
+📌 Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. 
+Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerçekleştikten sonra stok miktarı RabbitMQ üzerinden güncellenmektedir.
 
 📂 Proje Yapısı:
-
 * config-server: Merkezi yapılandırma sunucusu.
 * discovery-server: Eureka kullanarak servis kaydı.
 * api-gateway: Spring Cloud Gateway kullanarak API geçidi.
 * product-service: Ürün bilgilerini yönetir.
 * inventory-service: Envanter ve stok seviyelerini yönetir.
 * order-service: Müşteri siparişlerini yönetir.
+* payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
 
 🌐 Endpointler:
 
@@ -58,14 +58,20 @@ Order Service:
 
 * GET /api/v1/orders: Tüm siparişleri listele.
 * GET /api/v1/orders/{id}: Belirli bir siparişi ID ile getir.
-* POST /api/v1/orders: Yeni sipariş oluştur (Sipariş verildiğinde stok miktarı RabbitMQ üzerinden envanter servisine iletilir ve güncellenir).
+* POST /api/v1/orders: Yeni sipariş oluştur.
 * PUT /api/v1/orders/{id}: Siparişi güncelle.
 * DELETE /api/v1/orders/{id}: Siparişi sil.
+
+Payment Service:
+
+* POST /api/v1/payments: Yeni ödeme oluştur (Sipariş verildikten sonra ödeme yapılması gerekir)(RABBIT MQ ÜZERİNDEN ÖDEME ALINDIKTAN SONRA STOK GÜNCELLEMESİ YAPILIR.).
+* GET /api/v1/payments/{orderId}: Belirli bir sipariş ID'si ile ödeme durumunu getir.
+* PUT /api/v1/payments/{orderId}: Ödemeyi güncelle (Ödeme yapıldıktan sonra RabbitMQ üzerinden stok miktarı güncellenir).
 
 
 📈 Gelecekteki Geliştirmeler:
 
 * Okta entegrasyonu ile kimlik doğrulama ve yetkilendirme.
-* Sleuth ve Zipkin kullanarak dağıtılmış izleme.
-* Daha detaylı loglama ve izleme eklemeleri.
+* Bildirim servisi eklenmesi.
+* Müşteri yönetimi için customer service eklenmesi.
 
