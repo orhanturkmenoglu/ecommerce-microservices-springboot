@@ -4,8 +4,8 @@ import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
 import com.example.product_service.dto.productDto.ProductRequestDto;
 import com.example.product_service.dto.productDto.ProductResponseDto;
+import com.example.product_service.enums.Category;
 import com.example.product_service.exception.InventoryNotFoundException;
-import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.external.InventoryClientService;
 import com.example.product_service.mapper.ProductMapper;
 import com.example.product_service.model.Inventory;
@@ -24,6 +24,7 @@ import javax.naming.ServiceUnavailableException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -33,15 +34,15 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    
+
     private final InventoryClientService inventoryClientService;
-    
+
     private final ProductMapper productMapper;
 
     // create
     @Transactional
     @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
-    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback") 
+    @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
     public ProductResponseDto createProduct(ProductRequestDto productRequestDto) {
         log.info("ProductService::createProduct started");
@@ -56,8 +57,9 @@ public class ProductService {
             throw new IllegalStateException("Product ID should not be null after saving.");
         }
 
-        log.info("ProductService::createProduct - Creating inventory for product id: {}", saveProduct.getId());
-        log.info("ProductService::createProduct - Creating inventory for product: {}", saveProduct);
+        log.info("ProductService::createProduct - Creating inventory for product id: {} , product: {}",
+                saveProduct.getId(), saveProduct);
+
         InventoryRequestDto inventoryRequestDto = productMapper.mapToInventoryRequestDto(saveProduct.getInventory());
         inventoryRequestDto.setProductId(saveProduct.getId());
 
@@ -74,7 +76,6 @@ public class ProductService {
         saveProduct.setInventoryId(inventoryResponseDto.getId());
 
 
-        log.info("ProductService::createProduct - mapToProductRequestDto  product {}", saveProduct);
         log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory);
         log.info("ProductService::createProduct finished");
         return productMapper.mapToProductResponseDto(saveProduct);
@@ -89,23 +90,23 @@ public class ProductService {
             throw new ServiceUnavailableException(ProductMessage.SERVICE_UNAVAILABLE_EXCEPTION);
         }
 
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = getProductsList();
 
         log.info("ProductService::getProductsAll finished");
         return productMapper.mapToProductResponseDtoList(productList);
     }
 
-    // getById
+    // getProductById
     public ProductResponseDto getProductById(String productId) {
         log.info("ProductService::getProductById started");
-        Product product = productRepository.findById(productId).orElseThrow(()
-                -> new ProductNotFoundException(ProductMessage.PRODUCT_NOT_FOUND + productId));
+
+        Product product = getProduct(productId);
 
         log.info("ProductService::getProductById finished");
         return productMapper.mapToProductResponseDto(product);
     }
 
-    // getById
+    // getInventoryById
     public ProductResponseDto getInventoryById(String inventoryId) {
         log.info("ProductService::getInventoryById started");
         Product product = productRepository.findByInventoryId(inventoryId).orElseThrow(()
@@ -122,8 +123,7 @@ public class ProductService {
     public ProductResponseDto updateProductById(ProductRequestDto productRequestDto) {
         log.info("ProductService::updateProductById started");
 
-        Product product = productRepository.findById(productRequestDto.getId()).orElseThrow(() ->
-                new NullPointerException(ProductMessage.PRODUCT_NOT_FOUND + productRequestDto.getId()));
+        Product product = getProduct(productRequestDto.getId());
         log.info("ProductService::updateProductById - product {}", product);
 
         Product updatedProduct = getUpdatedProduct(productRequestDto, product);
@@ -150,7 +150,7 @@ public class ProductService {
     public String deleteProductById(String productId) {
         log.info("ProductService::deleteProductById started");
 
-        ProductResponseDto product = getProductById(productId);
+        Product product = getProduct(productId);
 
         getInventoryById(product.getInventoryId());
 
@@ -168,7 +168,7 @@ public class ProductService {
     public List<ProductResponseDto> getProductByPriceRange(double minPrice, double maxPrice) {
         log.info("ProductService::getProductNamesByPriceRange started");
 
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = getProductsList();
 
 
         log.info("ProductService::getProductNamesByPriceRange finished");
@@ -182,7 +182,8 @@ public class ProductService {
     public List<ProductResponseDto> getProductByPriceGreaterThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceGreaterThanEqual started");
 
-        List<Product> productList = productRepository.findAll();
+
+        List<Product> productList = getProductsList();
 
 
         log.info("ProductService::getProductNamesByPriceGreaterThanEqual finished");
@@ -193,10 +194,11 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+
     public List<ProductResponseDto> getProductByPriceLessThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceLessThanEqual started");
 
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = getProductsList();
 
 
         log.info("ProductService::getProductNamesByPriceLessThanEqual finished");
@@ -208,7 +210,7 @@ public class ProductService {
 
     public List<ProductResponseDto> getProductByQuantity(int quantity) {
         log.info("ProductService::getProductByQuantity started");
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = getProductsList();
 
 
         log.info("ProductService::getProductByQuantity finish");
@@ -220,14 +222,33 @@ public class ProductService {
 
     public List<ProductResponseDto> getProductByCategory(String category) {
         log.info("ProductService::getProductByCategory started");
-        List<Product> productList = productRepository.findAll();
 
+        Category categoryTypeEnum = null;
+        try{
+            categoryTypeEnum = Category.valueOf(category.toUpperCase());
+            log.info("ProductResponseDto::getProductByCategory - categoryType : {}", categoryTypeEnum);
+        }catch (IllegalArgumentException exception)
+        {
+            log.error("Product category type  provided: {}",category);
+            // Hata durumunda uygun bir işlem yapabilirsiniz, örneğin özel bir istisna fırlatma
+            throw new IllegalArgumentException("Product category type: " + categoryTypeEnum);
+        }
+        List<Product> productList = productRepository.findByCategory(categoryTypeEnum);
 
         log.info("ProductService::getProductByCategory finish");
         return productList.stream()
-                .filter(product -> Objects.deepEquals(product.getCategory(), category))
                 .map(productMapper::mapToProductResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    private List<Product> getProductsList() {
+        return productRepository.findAll();
+    }
+
+
+    private Product getProduct(String productId) {
+        return productRepository.findById(productId).orElseThrow(() ->
+                new NullPointerException(ProductMessage.PRODUCT_NOT_FOUND + productId));
     }
 
     private Product getUpdatedProduct(ProductRequestDto productRequestDto, Product product) {

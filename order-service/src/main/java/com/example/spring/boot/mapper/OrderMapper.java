@@ -28,7 +28,7 @@ public class OrderMapper {
                 .id(orderResponseDto.getId())
                 .productId(orderResponseDto.getProductId())
                 .inventoryId(orderResponseDto.getInventoryId())
-                .orderStatus(OrderStatus.PROCESSING)
+                .orderStatus(OrderStatus.PENDING)
                 .quantity(orderResponseDto.getQuantity())
                 .orderDate(LocalDateTime.now())
                 .totalAmount(orderResponseDto.getTotalAmount())

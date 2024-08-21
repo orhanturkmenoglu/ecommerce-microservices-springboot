@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,10 +21,11 @@ public class PaymentResponseDto implements Serializable {
     private String id;
     private String customerId;
     private String orderId;
+    private int quantity;
     private Double amount;
     private PaymentStatus paymentStatus;
     private PaymentType paymentType;
-
+    private LocalDateTime paymentDate;
     @Embedded
     private Customer customer ;
 }

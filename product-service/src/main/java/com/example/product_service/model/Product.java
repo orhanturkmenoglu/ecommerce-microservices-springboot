@@ -1,17 +1,15 @@
 package com.example.product_service.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.product_service.enums.Category;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
@@ -29,9 +27,14 @@ public class Product implements Serializable {
     private String inventoryId;
     private String name;
     private String description;
-    private String category;
+
+    @Enumerated(EnumType.STRING)
+    private Category category = Category.DİĞER;
+
     private double price;
-    
+
+    private LocalDateTime createdDate;
+
     private Inventory inventory;
 
 }

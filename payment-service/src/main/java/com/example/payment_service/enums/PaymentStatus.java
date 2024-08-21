@@ -1,11 +1,15 @@
 package com.example.payment_service.enums;
 
 public enum PaymentStatus {
+    NEW,
     PENDING,
+    PROCESSING,
     COMPLETED,
-    FAILED,
+    SHIPPED,
+    DELIVERED,
     CANCELLED,
+    RETURNED,
     REFUNDED,
-    PENDING_REVIEW,
-    CHARGED_BACK
+    PAID,
+    FAILED
 }

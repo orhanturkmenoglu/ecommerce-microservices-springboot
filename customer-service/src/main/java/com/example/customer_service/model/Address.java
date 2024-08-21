@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "address")
@@ -30,5 +31,6 @@ public class Address implements Serializable {
     private String street;
     private String zipCode;
     private String description;
+    private LocalDateTime createdDate;
 
 }

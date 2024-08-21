@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderRequestDto implements Serializable {
+public class OrderUpdateRequestDto implements Serializable {
 
 
     @NotEmpty(message = "Order customer Id cannot be empty")
@@ -27,6 +27,11 @@ public class OrderRequestDto implements Serializable {
 
     @NotEmpty(message = "Order inventoryId cannot be empty")
     private String inventoryId;
+
+    @NotEmpty(message = "Order paymentId cannot be empty")
+    private String paymentId;
+
+    private LocalDateTime orderDate;
 
     @NotNull(message = "Order quantity cannot be null")
     @Min(value = 0, message = "Order quantity must be greater than zero")

@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -27,6 +28,8 @@ public class Payment implements Serializable {
 
     private String orderId;
 
+    private int quantity;
+
     private Double amount;
 
     private PaymentStatus paymentStatus = PaymentStatus.PENDING; // ödeme durumu default değer.
@@ -34,6 +37,7 @@ public class Payment implements Serializable {
 
     private PaymentType paymentType;  // ödeme tipi
 
+    private LocalDateTime paymentDate;
 
     @PostConstruct
     private void init() {

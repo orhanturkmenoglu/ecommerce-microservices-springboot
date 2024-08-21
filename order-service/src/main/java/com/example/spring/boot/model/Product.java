@@ -1,5 +1,8 @@
 package com.example.spring.boot.model;
 
+import com.example.spring.boot.enums.Category;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +20,6 @@ public class Product implements Serializable {
     private String inventoryId;
     private String name;
     private String description;
-    private String category;
+    private Category category;
     private double price;
 }
