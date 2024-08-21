@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,8 +20,6 @@ public class CustomerResponseDto implements Serializable {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private LocalDateTime createdDate;
-
 
     private List<Address> addressList;
 

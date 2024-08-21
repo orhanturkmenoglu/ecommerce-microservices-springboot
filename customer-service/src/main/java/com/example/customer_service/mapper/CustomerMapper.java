@@ -5,7 +5,6 @@ import com.example.customer_service.dto.customerDto.CustomerResponseDto;
 import com.example.customer_service.model.Customer;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +17,6 @@ public class CustomerMapper {
                 .lastName(customerRequestDto.getLastName())
                 .email(customerRequestDto.getEmail())
                 .phoneNumber(customerRequestDto.getPhoneNumber())
-                .createdDate(LocalDateTime.now())
                 .addressList(customerRequestDto.getAddressList())
                 .build();
     }
@@ -30,7 +28,6 @@ public class CustomerMapper {
                 .lastName(customer.getLastName())
                 .email(customer.getEmail())
                 .phoneNumber(customer.getPhoneNumber())
-                .createdDate(customer.getCreatedDate())
                 .addressList(customer.getAddressList())
                 .build();
     }

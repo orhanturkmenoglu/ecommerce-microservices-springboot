@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -28,8 +27,6 @@ public class CustomerRequestDto implements Serializable {
 
     @NotEmpty(message = "Customer phoneNumber cannot be empty")
     private String phoneNumber;
-
-    private LocalDateTime createdDate;
 
     @NotEmpty(message = "Customer addressList cannot be empty")
     private List<Address> addressList;

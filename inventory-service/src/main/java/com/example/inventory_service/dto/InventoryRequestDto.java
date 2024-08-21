@@ -23,4 +23,6 @@ public class InventoryRequestDto implements Serializable {
 
     @NotNull(message = "Inventory stock quantity cannot be null")
     private int stockQuantity;
+
+    private LocalDateTime lastUpdated;
 }

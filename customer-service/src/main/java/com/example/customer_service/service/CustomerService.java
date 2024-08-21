@@ -2,6 +2,7 @@ package com.example.customer_service.service;
 
 import com.example.customer_service.dto.customerDto.CustomerRequestDto;
 import com.example.customer_service.dto.customerDto.CustomerResponseDto;
+import com.example.customer_service.exception.ResourceCustomerNotFoundException;
 import com.example.customer_service.mapper.CustomerMapper;
 import com.example.customer_service.model.Customer;
 import com.example.customer_service.repository.CustomerRepository;
@@ -50,7 +51,7 @@ public class CustomerService {
     public List<CustomerResponseDto> getCustomersAll() {
         log.info("CustomerService::getCustomersAll started");
 
-        List<Customer> customerList = getCustomers();
+        List<Customer> customerList = customerRepository.findAll();
         log.info("CustomerService::getCustomersAll customerList : {}", customerList);
 
         log.info("CustomerService::getCustomersAll finished");
@@ -60,7 +61,9 @@ public class CustomerService {
     public CustomerResponseDto getCustomerById(String customerId) {
         log.info("CustomerService::getCustomerById started");
 
-        Customer customer = getCustomer(customerId);
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() ->
+                        new NullPointerException("Customer not found with id :" + customerId));
         log.info("CustomerService::getCustomerById customer : {}", customer);
 
 
@@ -68,14 +71,13 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDto(customer);
     }
 
-
     public List<CustomerResponseDto> getCustomersByFirstName(String firstName) {
         log.info("CustomerService::getCustomerByFirstName started");
 
-        List<Customer> customerList = getCustomers();
+        List<Customer> customerList = customerRepository.findAll();
 
         List<Customer> customers = customerList.stream()
-                .filter(customer -> customer.getFirstName().contains(firstName))
+                .filter(customer ->customer.getFirstName().contains(firstName))
                 .sorted()
                 .toList();
 
@@ -86,15 +88,14 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDtoList(customers);
     }
 
-
     public void deleteCustomerById(String customerId) {
         log.info("CustomerService::deleteCustomerById started");
 
-        Customer customer = getCustomer(customerId);
+        CustomerResponseDto customer = getCustomerById(customerId);
         log.info("CustomerService::deleteCustomerById customer : {}", customer);
 
 
-        customerRepository.deleteById(customer.getId());
+        customerRepository.deleteById(customerId);
         log.info("CustomerService::deleteCustomerById finished");
     }
 
@@ -102,7 +103,8 @@ public class CustomerService {
     public CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerRequestDto) {
         log.info("CustomerService::updateCustomer started");
 
-        Customer customer = getCustomer(customerId);
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceCustomerNotFoundException("Customer not found"));
 
         log.info("CustomerService::updateCustomer customer : {}", customer);
 
@@ -121,15 +123,6 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDto(updatedCustomer);
     }
 
-    private Customer getCustomer(String customerId) {
-        return customerRepository.findById(customerId)
-                .orElseThrow(() ->
-                        new NullPointerException("Customer not found with id :" + customerId));
-    }
-
-    private List<Customer> getCustomers() {
-        return customerRepository.findAll();
-    }
 
     private CustomerResponseDto customerServiceFallback(Exception exception) {
         log.info("fallback is executed because servise is down :{}", exception.getMessage());

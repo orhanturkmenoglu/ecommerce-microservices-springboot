@@ -9,7 +9,6 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.validator.constraints.UUID;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -30,7 +29,7 @@ public class Customer implements Serializable {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private LocalDateTime createdDate;
+
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 
 @Data
@@ -35,6 +34,4 @@ public class AddressRequestDto implements Serializable {
     private String zipCode;
 
     private String description;
-
-    private LocalDateTime createdDate;
 }

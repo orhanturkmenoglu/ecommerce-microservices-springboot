@@ -5,7 +5,6 @@ import com.example.payment_service.dto.paymentDto.PaymentRequestDto;
 import com.example.payment_service.dto.paymentDto.PaymentResponseDto;
 import com.example.payment_service.dto.paymentDto.PaymentUpdateRequestDto;
 import com.example.payment_service.enums.PaymentStatus;
-import com.example.payment_service.enums.PaymentType;
 import com.example.payment_service.exception.InsufficientStockException;
 import com.example.payment_service.exception.PaymentCustomerNotFoundException;
 import com.example.payment_service.exception.PaymentNotFoundException;
@@ -26,10 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +54,7 @@ public class PaymentService {
         OrderResponseDto order = orderServiceClient.getOrderById(paymentRequestDto.getOrderId());
         Inventory inventory = inventoryServiceClient.getInventoryById(order.getInventoryId());
         Customer customer = customerClientService.getCustomerById(paymentRequestDto.getCustomerId());
+        // müşteriyi kontrol et
 
         log.info("PaymentResponseDto::processPayment - customer with id : {},  Order with id : {}," +
                 " inventory with id : {}", customer.getId(), order.getId(), inventory.getId());
@@ -66,7 +62,6 @@ public class PaymentService {
 
         // ödeme oluştur..
         Payment payment = paymentMapper.mapToPayment(paymentRequestDto);
-        payment.setQuantity(order.getQuantity());
         payment.setAmount(order.getTotalAmount());
         log.info("PaymentResponseDto::processPayment - payment: {}", payment);
 
@@ -79,6 +74,7 @@ public class PaymentService {
         // ödeme başarılı ise stok rabbitmq yardımı ile güncellenecek...
         updatedInventory(order, inventory);
 
+        // ödeme alındığına dair bildirim gönder.
         PaymentResponseDto paymentResponseDto = paymentMapper.mapToPaymentResponseDto(savedPayment);
         paymentResponseDto.setCustomer(customer);
         log.info("PaymentResponseDto::processPayment - paymentResponseDto : {}", paymentResponseDto);
@@ -97,63 +93,6 @@ public class PaymentService {
         return paymentMapper.mapToPaymentResponseDto(payment);
     }
 
-    public List<PaymentResponseDto> getPaymentType(String paymentType) {
-        log.info("PaymentService::getPaymentType started");
-
-        // Enum dönüşümünü ve geçersiz değerleri kontrol etme
-        PaymentType paymentTypeEnum;
-        try {
-            paymentTypeEnum = PaymentType.valueOf(paymentType.toUpperCase());
-            log.info("PaymentResponseDto::getPaymentType - paymentTypeEnum : {}", paymentTypeEnum);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid payment type provided: {}", paymentType);
-            // Hata durumunda uygun bir işlem yapabilirsiniz, örneğin özel bir istisna fırlatma
-            throw new IllegalArgumentException("Invalid payment type: " + paymentType);
-        }
-
-        // Veritabanından belirtilen ödeme türüne göre ödeme bilgilerini al
-        List<Payment> paymentList = paymentRepository.findByPaymentType(paymentTypeEnum);
-        log.info("PaymentResponseDto::getPaymentType - paymentList : {}", paymentList);
-
-        // Filtreleme ve dönüştürme
-        List<Payment> payments = paymentList.stream()
-                .filter(payment -> payment.getPaymentType() == paymentTypeEnum)
-                .toList();
-
-
-        log.info("PaymentResponseDto::getPaymentType - payments : {}", payments);
-        log.info("PaymentService::getPaymentType finished");
-        return paymentMapper.maptoPaymentResponseDtoList(payments);
-    }
-
-    public List<PaymentResponseDto> getPaymentDateBetween(String startDate, String endDate) {
-        log.info("PaymentService::getPaymentDateBetween started");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime start = LocalDateTime.parse(startDate, formatter);
-        LocalDateTime end = LocalDateTime.parse(endDate, formatter);
-
-        log.info("PaymentResponseDto::getPaymentDateBetween -formatter : {}" +
-                "start : {} ,end : {}", formatter, start, end);
-
-        List<Payment> paymentList = paymentRepository.findByPaymentDateBetween(start, end);
-
-        log.info("PaymentResponseDto::getPaymentDateBetween -paymentList : {}", paymentList);
-
-        log.info("PaymentService::getPaymentDateBetween finished");
-        return paymentMapper.maptoPaymentResponseDtoList(paymentList);
-    }
-
-    public PaymentResponseDto getPaymentCustomerById(String customerId) {
-        log.info("PaymentService::getPaymentCustomerById started");
-
-        Payment paymentCustomerById = getPaymentCustomer(customerId);
-        log.info("PaymentResponseDto::getPaymentById -paymentCustomerById : {}", paymentCustomerById);
-
-        log.info("PaymentService::getPaymentCustomerById finished");
-        return paymentMapper.mapToPaymentResponseDto(paymentCustomerById);
-    }
-
 
     @Transactional
     @CircuitBreaker(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
@@ -163,10 +102,12 @@ public class PaymentService {
         log.info("PaymentService::updatePayment started");
 
         OrderResponseDto order = orderServiceClient.getOrderById(paymentUpdateRequestDto.getOrderId());
-        Inventory inventory = inventoryServiceClient.getInventoryById(order.getInventoryId());
         Customer customer = customerClientService.getCustomerById(paymentUpdateRequestDto.getCustomerId());
 
-        Payment paymentCustomerById = getPaymentCustomer(paymentUpdateRequestDto.getCustomerId());
+        Payment paymentCustomerById = paymentRepository.findByCustomerId(paymentUpdateRequestDto.getCustomerId())
+                .orElseThrow(() ->
+                        new PaymentCustomerNotFoundException(PaymentMessage.PAYMENT_CUSTOMER_NOT_FOUND +
+                                paymentUpdateRequestDto.getCustomerId()));
 
         log.info("PaymentResponseDto::updatePayment - order : {}", order);
         log.info("PaymentResponseDto::updatePayment - customer : {}", customer);
@@ -174,9 +115,7 @@ public class PaymentService {
 
         paymentCustomerById.setPaymentStatus(PaymentStatus.COMPLETED);
         paymentCustomerById.setPaymentType(paymentUpdateRequestDto.getPaymentType());
-        paymentCustomerById.setQuantity(order.getQuantity());
-        paymentCustomerById.setAmount(order.getTotalAmount());
-
+        paymentCustomerById.setAmount(order.getTotalAmount());  // BURASI ORDER-SERVICEDEN GELECEK
         Payment savedPayment = paymentRepository.save(paymentCustomerById);
         log.info("PaymentResponseDto::updatePayment - saved payment : {}", savedPayment);
 
@@ -184,24 +123,8 @@ public class PaymentService {
         paymentResponseDto.setCustomer(customer);
         log.info("PaymentResponseDto::updatePayment -paymentResponseDto : {}", paymentResponseDto);
 
-        // ödeme başarılı ise stok rabbitmq yardımı ile güncellenecek...
-        updatedInventory(order, inventory);
-
         log.info("PaymentService::updatePayment finished");
         return paymentResponseDto;
-    }
-
-    @Transactional
-    public void cancelPaymentById(String paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for ID: " + paymentId));
-
-        // Ödeme durumu iptal olarak güncellenir
-        payment.setPaymentStatus(PaymentStatus.REFUNDED);
-
-        // İptal edilen ödeme kaydedilir
-        paymentRepository.save(payment);
-        log.info("PaymentService::cancelPaymentById - Payment cancelled successfully. Payment ID: {}", paymentId);
     }
 
 
@@ -239,12 +162,6 @@ public class PaymentService {
     private Payment getPayment(String paymentId) {
         return paymentRepository.findById(paymentId).orElseThrow(() ->
                 new PaymentNotFoundException(PaymentMessage.PAYMENT_NOT_FOUND + paymentId));
-    }
-
-    private Payment getPaymentCustomer(String customerId) {
-        return paymentRepository.findByCustomerId(customerId)
-                .orElseThrow(() ->
-                        new PaymentCustomerNotFoundException(PaymentMessage.PAYMENT_CUSTOMER_NOT_FOUND + customerId));
     }
 
     private PaymentResponseDto paymentServiceFallback(Exception exception) {

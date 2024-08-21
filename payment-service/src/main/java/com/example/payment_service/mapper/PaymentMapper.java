@@ -6,9 +6,6 @@ import com.example.payment_service.enums.PaymentStatus;
 import com.example.payment_service.model.Payment;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @Component
 public class PaymentMapper {
 
@@ -18,7 +15,6 @@ public class PaymentMapper {
                 .orderId(paymentRequestDto.getOrderId())
                 .paymentStatus(PaymentStatus.COMPLETED)
                 .paymentType(paymentRequestDto.getPaymentType())
-                .paymentDate(LocalDateTime.now())
                 .build();
     }
 
@@ -28,17 +24,8 @@ public class PaymentMapper {
                 .customerId(payment.getCustomerId())
                 .orderId(payment.getOrderId())
                 .paymentStatus(payment.getPaymentStatus())
-                .quantity(payment.getQuantity())
                 .amount(payment.getAmount())
                 .paymentType(payment.getPaymentType())
-                .paymentDate(LocalDateTime.now())
                 .build();
     }
-
-    public List<PaymentResponseDto> maptoPaymentResponseDtoList(List<Payment> payments) {
-        return payments.stream()
-                .map(this::mapToPaymentResponseDto)
-                .toList();
-    }
-
 }

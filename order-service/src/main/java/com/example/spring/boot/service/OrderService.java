@@ -3,7 +3,6 @@ package com.example.spring.boot.service;
 import com.example.spring.boot.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderResponseDto;
-import com.example.spring.boot.dto.orderDto.OrderUpdateRequestDto;
 import com.example.spring.boot.dto.paymentDto.PaymentUpdateRequestDto;
 import com.example.spring.boot.enums.OrderStatus;
 import com.example.spring.boot.exception.InsufficientStockException;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -104,62 +102,43 @@ public class OrderService {
     }
 
 
-    public List<OrderResponseDto> getByOrderDateBetween(String startDateTime, String endDateTime) {
-        log.info("Order::getByOrderDateBetween started.");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime start = LocalDateTime.parse(startDateTime, formatter);
-        LocalDateTime end = LocalDateTime.parse(endDateTime, formatter);
-
-        log.info("List<OrderResponseDto>::getByOrderDateBetween - formatter : {} ," +
-                " start : {} , end : {}", formatter, start, end);
-
-        List<Order> orderList = orderRepository.findByOrderDateBetween(start, end);
-        log.info("OrderResponseDto::getByOrderDateBetween - orderList : {}", orderList);
-
-        log.info("Order::getByOrderDateBetween finished.");
-        return orderMapper.mapToOrderResponseDtoList(orderList);
-    }
-
-
     @Transactional
     @Retry(name = "orderService", fallbackMethod = "fallbackUpdateOrder")
     @CircuitBreaker(name = "orderServiceBreaker", fallbackMethod = "fallbackUpdateOrder")
     @RateLimiter(name = "createOrderLimiter", fallbackMethod = "fallbackUpdateOrder")
-    public OrderResponseDto updateOrder(String id, OrderUpdateRequestDto orderUpdateRequestDto) {
-        log.info("OrderService::updateOrder - Order update process started. Order ID: {}", id);
+    public OrderResponseDto updateOrder(String id, OrderRequestDto orderRequestDto) {
+        log.info("OrderService::updateOrder started");
 
         OrderResponseDto existingOrder = getOrderById(id);
 
         // Feign Client ile senkron olarak Product ve Inventory servislerine çağrı yapıyoruz
-        Inventory inventory = inventoryClientService.getInventoryById(orderUpdateRequestDto.getInventoryId());
-        Product product = productClientService.getProductById(orderUpdateRequestDto.getProductId());
-        Customer customer = customerClientService.getCustomerById(orderUpdateRequestDto.getCustomerId());
+        Inventory inventory = inventoryClientService.getInventoryById(orderRequestDto.getInventoryId());
+        Product product = productClientService.getProductById(orderRequestDto.getProductId());
+        Customer customer = customerClientService.getCustomerById(orderRequestDto.getCustomerId());
 
         log.info("OrderResponseDto::updateOrder - " +
                         "existingOrder with order id : {} ," +
-                        " inventory with id : {}, customer with id : {} ",
+                        " inventory with id : {}, inventory with id : {} ",
                 existingOrder.getId(), inventory.getId(), customer.getId());
 
 
         int currentOrderQuantity = existingOrder.getQuantity();
-        int newOrderQuantity = orderUpdateRequestDto.getQuantity();
-        int updatedInventoryQuantity = inventory.getStockQuantity() + currentOrderQuantity;
+        int newOrderQuantity = orderRequestDto.getQuantity();
+        int updatedInventoryQuantity = inventory.getStockQuantity() + currentOrderQuantity - newOrderQuantity;
 
 
-        if (orderUpdateRequestDto.getShippingAddress() == null) {
+        if (orderRequestDto.getShippingAddress() == null) {
             List<Address> addressList = customer.getAddressList();
             Address address = addressList.stream().findFirst().orElseThrow();
 
-            log.info("OrderService::updateOrder -" +
-                            " Shipping address added to order. Customer ID: {}, Address: {}",
-                    customer.getId(), existingOrder.getShippingAddress());
+            log.info("OrderResponseDto::updateOrder - addressList: {} ," +
+                    "  address: {}", addressList, address);
 
             existingOrder.setShippingAddress(address);
         }
 
         existingOrder.setQuantity(newOrderQuantity);
-        existingOrder.setTotalAmount((product.getPrice() * orderUpdateRequestDto.getQuantity()));
+        existingOrder.setTotalAmount((product.getPrice() * orderRequestDto.getQuantity()));
 
 
         Order mapToOrder = orderMapper.mapToOrder(existingOrder);
@@ -167,23 +146,21 @@ public class OrderService {
 
         // sipariş güncelle.
         Order updatedOrder = orderRepository.save(mapToOrder);
-        log.info("OrderService::updateOrder - Updating order. Order ID: {}, Quantity: {}, Total Amount: {}",
-                updatedOrder.getId(), updatedOrder.getQuantity(), updatedOrder.getTotalAmount());
+        log.info("OrderResponseDto::updateOrder - updatedOrder order : {}", updatedOrder);
 
 
-        // ÖDEMEYİ İPTAL ET ...
-        paymentClientService.cancelPayment(orderUpdateRequestDto.getPaymentId());
-
-        // ödeme güncelleme işlemine yönlendir.
-        // ödeme güncellendikten sonra stok miktari eski haline getir.
-
+        // Envanter güncelleme isteğini Feign Client ile gönderiyoruz
         InventoryUpdateRequestDto updateRequest = getInventoryUpdateRequestDto(updatedOrder, updatedInventoryQuantity);
         log.info("OrderResponseDto::updateOrder - updateRequest  : {}", updateRequest);
 
-        // Envanter güncelleme isteğini Feign Client ile gönderiyoruz
+        // stok güncelle
         inventoryClientService.updateInventory(inventory.getId(), updateRequest);
+        log.info("OrderService::updateOrder finish");
 
-        log.info("OrderService::updateOrder - Order update process completed successfully. Updated Order ID: {}", updatedOrder.getId());
+        // sipariş güncelledikten sonra ödeme var mı kontrol et ?
+        // sipariş güncellendiğinde ödeme silinecek müşteriden tekrar ödeme beklenecek.
+
+
         return orderMapper.mapToOrderResponseDto(updatedOrder);
     }
 
@@ -194,22 +171,19 @@ public class OrderService {
         OrderResponseDto orderResponseDto = getOrderById(id);
         Order order = orderMapper.mapToOrder(orderResponseDto);
 
-        log.info("OrderResponseDto::deleteOrder - orderResponseDto  : {}" +
-                "order : {}", orderResponseDto,order);
-
         orderRepository.delete(order);
+
 
         log.info("OrderService::deleteOrder finish");
     }
 
-    private static PaymentUpdateRequestDto getPaymentUpdate(Product product, Customer customer, Order updatedOrder, OrderResponseDto existingOrder) {
-        double updatedPrice = product.getPrice() * updatedOrder.getQuantity();
+    private static PaymentUpdateRequestDto getUpdatePayment(Product product, Order order) {
         return PaymentUpdateRequestDto.builder()
-                .customerId(customer.getId())
-                .orderId(existingOrder.getId())
-                .amount(updatedPrice)
+                .orderId(order.getId())
+                .amount(product.getPrice() * order.getQuantity())
                 .build();
     }
+
 
     private OrderResponseDto getSaveOrder(OrderRequestDto orderRequestDto, Product product, Address address) {
         orderRequestDto.setShippingAddress(address);
@@ -222,13 +196,6 @@ public class OrderService {
         return orderMapper.mapToOrderResponseDto(saveOrder);
     }
 
-    private static InventoryUpdateRequestDto getInventoryUpdateRequestDto(Order save, int updatedInventoryQuantity) {
-        return InventoryUpdateRequestDto.builder()
-                .inventoryId(save.getInventoryId())
-                .newQuantity(updatedInventoryQuantity)
-                .lastUpdated(LocalDateTime.now())
-                .build();
-    }
     private OrderResponseDto fallbackCreateOrder(OrderRequestDto orderRequestDto, Throwable t) {
         log.error("Error creating order: ", t);
         return new OrderResponseDto(); // or any fallback response
@@ -237,6 +204,15 @@ public class OrderService {
     private OrderResponseDto fallbackUpdateOrder(OrderRequestDto orderRequestDto, Throwable t) {
         log.error("Error update  order: ", t);
         return new OrderResponseDto(); // or any fallback response
+    }
+
+
+    private static InventoryUpdateRequestDto getInventoryUpdateRequestDto( Order save, int updatedInventoryQuantity) {
+        return InventoryUpdateRequestDto.builder()
+                .inventoryId(save.getInventoryId())
+                .newQuantity(updatedInventoryQuantity)
+                .lastUpdated(LocalDateTime.now())
+                .build();
     }
 
 }

@@ -28,6 +28,8 @@ public class OrderRequestDto implements Serializable {
     @NotEmpty(message = "Order inventoryId cannot be empty")
     private String inventoryId;
 
+    private LocalDateTime orderDate;
+
     @NotNull(message = "Order quantity cannot be null")
     @Min(value = 0, message = "Order quantity must be greater than zero")
     private int quantity;

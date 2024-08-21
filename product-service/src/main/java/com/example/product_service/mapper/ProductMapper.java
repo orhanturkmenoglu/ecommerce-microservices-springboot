@@ -9,7 +9,6 @@ import com.example.product_service.model.Inventory;
 import com.example.product_service.model.Product;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -22,7 +21,6 @@ public class ProductMapper {
                 .description(productRequestDto.getDescription())
                 .category(productRequestDto.getCategory())
                 .price(productRequestDto.getPrice())
-                .createdDate(LocalDateTime.now())
                 .inventory(mapToInventory(productRequestDto.getInventoryRequestDto()))
                 .build();
     }
@@ -35,8 +33,18 @@ public class ProductMapper {
                 .category(product.getCategory())
                 .price(product.getPrice())
                 .inventoryId(product.getInventoryId())
-                .createdDate(LocalDateTime.now())
                 .inventoryResponseDto(mapToInventoryResponseDto(product.getInventory()))
+                .build();
+    }
+
+    public ProductRequestDto mapToProductRequestDto(Product product) {
+        return ProductRequestDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .category(product.getCategory())
+                .price(product.getPrice())
+                .inventoryRequestDto(mapToInventoryRequestDto(product.getInventory()))
                 .build();
     }
 
