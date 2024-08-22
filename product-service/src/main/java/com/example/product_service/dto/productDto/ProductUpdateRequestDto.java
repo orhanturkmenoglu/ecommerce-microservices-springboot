@@ -1,6 +1,7 @@
 package com.example.product_service.dto.productDto;
 
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
+import com.example.product_service.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.product_service.enums.Category;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -16,7 +17,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductRequestDto implements Serializable {
+public class ProductUpdateRequestDto implements Serializable {
 
     private String id;
 
@@ -26,7 +27,7 @@ public class ProductRequestDto implements Serializable {
     @NotEmpty(message = "Product description cannot be empty ")
     private String description;
 
-    //@NotEmpty(message = "Product category cannot be empty ")
+    @NotEmpty(message = "Product category cannot be empty ")
     private Category category;
 
     @NotNull(message = "Product price cannot be null")
@@ -34,5 +35,5 @@ public class ProductRequestDto implements Serializable {
     private double price;
 
 
-    private InventoryRequestDto inventoryRequestDto;
+    private InventoryUpdateRequestDto inventoryUpdateRequestDto;
 }

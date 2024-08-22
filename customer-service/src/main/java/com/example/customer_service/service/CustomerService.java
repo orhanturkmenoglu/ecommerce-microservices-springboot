@@ -2,7 +2,9 @@ package com.example.customer_service.service;
 
 import com.example.customer_service.dto.customerDto.CustomerRequestDto;
 import com.example.customer_service.dto.customerDto.CustomerResponseDto;
+import com.example.customer_service.dto.customerDto.CustomerUpdateRequestDto;
 import com.example.customer_service.mapper.CustomerMapper;
+import com.example.customer_service.model.Address;
 import com.example.customer_service.model.Customer;
 import com.example.customer_service.repository.CustomerRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +39,15 @@ public class CustomerService {
         if (Objects.isNull(customerRequestDto)) {
             throw new NullPointerException("Customer cannot be null or empty");
         }
+
+        List<Address> addressList = customerRequestDto.getAddressList();
+
+        if (addressList !=null){
+            addressList.forEach(address -> {
+                address.setCreatedDate(LocalDateTime.now());
+            });
+        }
+
 
         Customer customer = customerMapper.mapToCustomer(customerRequestDto);
         log.info("CustomerService::createCustomer customer : {}", customer);
@@ -74,10 +86,7 @@ public class CustomerService {
 
         List<Customer> customerList = getCustomers();
 
-        List<Customer> customers = customerList.stream()
-                .filter(customer -> customer.getFirstName().contains(firstName))
-                .sorted()
-                .toList();
+        List<Customer> customers = customerList.stream().filter(customer -> customer.getFirstName().contains(firstName)).sorted().toList();
 
         log.info("CustomerService::getCustomerByFirstName customers : {}", customers);
 
@@ -99,18 +108,17 @@ public class CustomerService {
     }
 
 
-    public CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerRequestDto) {
+    public CustomerResponseDto updateCustomer(String customerId, CustomerUpdateRequestDto customerUpdateRequestDto) {
         log.info("CustomerService::updateCustomer started");
 
         Customer customer = getCustomer(customerId);
 
         log.info("CustomerService::updateCustomer customer : {}", customer);
 
-        customer.setFirstName(customerRequestDto.getFirstName());
-        customer.setLastName(customerRequestDto.getLastName());
-        customer.setEmail(customerRequestDto.getEmail());
-        customer.setPhoneNumber(customerRequestDto.getPhoneNumber());
-        customer.setAddressList(customerRequestDto.getAddressList());
+        customer.setFirstName(customerUpdateRequestDto.getFirstName());
+        customer.setLastName(customerUpdateRequestDto.getLastName());
+        customer.setEmail(customerUpdateRequestDto.getEmail());
+        customer.setPhoneNumber(customerUpdateRequestDto.getPhoneNumber());
 
 
         Customer updatedCustomer = customerRepository.save(customer);
@@ -122,9 +130,7 @@ public class CustomerService {
     }
 
     private Customer getCustomer(String customerId) {
-        return customerRepository.findById(customerId)
-                .orElseThrow(() ->
-                        new NullPointerException("Customer not found with id :" + customerId));
+        return customerRepository.findById(customerId).orElseThrow(() -> new NullPointerException("Customer not found with id :" + customerId));
     }
 
     private List<Customer> getCustomers() {

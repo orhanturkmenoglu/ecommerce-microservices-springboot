@@ -3,6 +3,7 @@ package com.example.product_service.mapper;
 
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
+import com.example.product_service.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.product_service.dto.productDto.ProductRequestDto;
 import com.example.product_service.dto.productDto.ProductResponseDto;
 import com.example.product_service.model.Inventory;
@@ -75,6 +76,15 @@ public class ProductMapper {
                 .id(inventory.getId())
                 .productId(inventory.getProductId())
                 .stockQuantity(inventory.getStockQuantity())
+                .build();
+    }
+
+
+    public InventoryUpdateRequestDto mapToInventoryUpdateRequestDto(Inventory inventory) {
+        return InventoryUpdateRequestDto.builder()
+                .inventoryId(inventory.getId())
+                .productId(inventory.getProductId())
+                .newQuantity(inventory.getStockQuantity())
                 .build();
     }
 

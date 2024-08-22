@@ -2,6 +2,7 @@ package com.example.customer_service.controller;
 
 import com.example.customer_service.dto.customerDto.CustomerRequestDto;
 import com.example.customer_service.dto.customerDto.CustomerResponseDto;
+import com.example.customer_service.dto.customerDto.CustomerUpdateRequestDto;
 import com.example.customer_service.model.Address;
 import com.example.customer_service.service.CustomerService;
 import jakarta.validation.Valid;
@@ -58,8 +59,8 @@ public class CustomerController {
     @PutMapping("/{customerId}")
     public ResponseEntity<CustomerResponseDto> updateCustomer(
             @PathVariable String customerId,
-            @RequestBody @Valid CustomerRequestDto customerRequestDto) {
-        CustomerResponseDto updatedCustomer = customerService.updateCustomer(customerId, customerRequestDto);
+            @RequestBody @Valid CustomerUpdateRequestDto customerUpdateRequestDto) {
+        CustomerResponseDto updatedCustomer = customerService.updateCustomer(customerId, customerUpdateRequestDto);
         return ResponseEntity.ok(updatedCustomer);
     }
 }

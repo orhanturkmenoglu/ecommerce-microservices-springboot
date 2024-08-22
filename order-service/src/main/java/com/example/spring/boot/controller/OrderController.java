@@ -39,7 +39,7 @@ public class OrderController {
 
 
     //http://localhost:8081/api/v1/orders?startDateTime=2024-08-21 10:00:00&endDateTime=2024-08-21 12:00:00
-    @GetMapping
+    @GetMapping("/orderDateBetween")
     public ResponseEntity<List<OrderResponseDto>> getByOrderDateBetween(@RequestParam("startDateTime") String startDateTime,
                                                                         @RequestParam("endDateTime") String endDateTime) {
         List<OrderResponseDto> orderResponseDtoList = orderService.getByOrderDateBetween(startDateTime,endDateTime);

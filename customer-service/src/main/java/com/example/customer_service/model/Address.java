@@ -32,5 +32,4 @@ public class Address implements Serializable {
     private String zipCode;
     private String description;
     private LocalDateTime createdDate;
-
 }

@@ -80,18 +80,14 @@ public class InventoryService {
         log.info("InventoryService::updateInventory started");
 
         Inventory inventory = getInventory(inventoryId);
-        InventoryResponseDto inventoryById = inventoryMapper.mapToInventoryResponseDto(inventory);
-        inventoryById.setStockQuantity(inventoryUpdateRequestDto.getNewQuantity());
 
-        log.info("InventoryService::updateInventory inventory :{} ," +
-                "inventoryById : {}", inventory,inventoryById);
+        log.info("InventoryService::updateInventory inventory :{} ", inventory);
+        inventory.setProductId(inventoryUpdateRequestDto.getProductId());
+        inventory.setStockQuantity(inventoryUpdateRequestDto.getNewQuantity());
 
+        Inventory updatedInventory = inventoryRepository.save(inventory);
 
-        Inventory mapToInventory = inventoryMapper.mapToInventory(inventoryById);
-        Inventory updatedInventory = inventoryRepository.save(mapToInventory);
-
-        log.info("InventoryService::updateInventory mapToInventory :{} ," +
-                "updatedInventory : {}", mapToInventory,updatedInventory);
+        log.info("InventoryService::updateInventory updatedInventory : {}", updatedInventory);
 
 
         log.info("InventoryService::updateInventory finished");

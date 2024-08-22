@@ -1,5 +1,6 @@
-package com.example.inventory_service.dto;
+package com.example.product_service.dto.inventoryDto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -16,15 +16,13 @@ import java.time.LocalDateTime;
 @Builder
 public class InventoryUpdateRequestDto implements Serializable {
 
-    @NotEmpty(message = "Inventory id cannot be empty")
+    @NotEmpty(message = "Inventory  Id cannot be empty")
     private String inventoryId;
-
 
     @NotEmpty(message = "Inventory product Id cannot be empty")
     private String productId;
 
-    @NotNull(message = "Inventory new quantity cannot be null")
+    @NotNull(message = "Inventory stock quantity cannot be null")
+    @Min(value = 0,message = "Inventory stock quantity must be 0")
     private int newQuantity;
-
-    private LocalDateTime lastUpdated;
 }

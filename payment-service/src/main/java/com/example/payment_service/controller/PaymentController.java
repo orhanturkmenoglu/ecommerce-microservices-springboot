@@ -53,7 +53,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentsList);
     }
 
-    @GetMapping
+    @GetMapping("/paymentDateBetween")
     public ResponseEntity<List<PaymentResponseDto>> getPaymentDateBetween(@RequestParam("startDate") String startDate,
                                                                           @RequestParam("endDate") String endDate) {
         List<PaymentResponseDto> paymentsList = paymentService.getPaymentDateBetween(startDate, endDate);

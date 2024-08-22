@@ -18,11 +18,6 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    @PostMapping
-    public ResponseEntity<AddressResponseDto> createAddress(@RequestBody AddressRequestDto addressRequestDto) {
-        AddressResponseDto address = addressService.createAddress(addressRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(address);
-    }
 
     @GetMapping("/all")
     public ResponseEntity<List<AddressResponseDto>> getAddressAll() {

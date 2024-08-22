@@ -10,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -21,25 +21,6 @@ public class AddressService {
     private final AddressRepository addressRepository;
 
     private final AddressMapper addressMapper;
-
-
-    @Transactional
-    public AddressResponseDto createAddress(AddressRequestDto addressRequestDto) {
-        log.info("AddressService::createAddress started");
-
-        if (Objects.isNull(addressRequestDto)) {
-            throw new NullPointerException("Address cannot be null or empty");
-        }
-
-        Address address = addressMapper.mapToAddress(addressRequestDto);
-        log.info("AddressService::createAddress address : {}", address);
-
-        Address savedAddress = addressRepository.save(address);
-        log.info("AddressService::createAddress savedAddress : {}", savedAddress);
-
-        log.info("AddressService::createAddress finished");
-        return addressMapper.mapToAddressResponseDto(savedAddress);
-    }
 
 
     public List<AddressResponseDto> getAddressAll() {
@@ -55,15 +36,14 @@ public class AddressService {
     public AddressResponseDto getAddressById(String addressId) {
         log.info("AddressService::getAddressById started");
 
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() ->
-                        new NullPointerException("Address not found with id : " + addressId));
+        Address address = getAddress(addressId);
         log.info("AddressService::getAddressById address : {}", address);
 
 
         log.info("AddressService::getAddressById finished");
         return addressMapper.mapToAddressResponseDto(address);
     }
+
 
     public void deleteAddressById(String addressId) {
         log.info("AddressService::deleteAddressById started");
@@ -75,21 +55,21 @@ public class AddressService {
         log.info("AddressService::deleteAddressById finished");
     }
 
+    @Transactional
     public AddressResponseDto updateAddress(String addressId, AddressRequestDto addressRequestDto) {
         log.info("AddressService::updateAddress started");
 
-        AddressResponseDto addressResponseDto = getAddressById(addressId);
+        Address address = getAddress(addressId);
 
-        addressResponseDto.setCountry(addressRequestDto.getCountry());
-        addressResponseDto.setCity(addressRequestDto.getCity());
-        addressResponseDto.setDistrict(addressRequestDto.getDistrict());
-        addressResponseDto.setStreet(addressRequestDto.getStreet());
-        addressResponseDto.setZipCode(addressRequestDto.getZipCode());
-        addressResponseDto.setDescription(addressRequestDto.getDescription());
+        address.setCountry(addressRequestDto.getCountry());
+        address.setCity(addressRequestDto.getCity());
+        address.setDistrict(addressRequestDto.getDistrict());
+        address.setStreet(addressRequestDto.getStreet());
+        address.setZipCode(addressRequestDto.getZipCode());
+        address.setDescription(addressRequestDto.getDescription());
+        address.setCreatedDate(LocalDateTime.now());
+        log.info("AddressService::updateAddress address : {}", address);
 
-        log.info("AddressService::updateAddress addressResponseDto : {}", addressResponseDto);
-
-        Address address = addressMapper.mapToAddress(addressResponseDto);
         Address updatedAddress = addressRepository.save(address);
         log.info("AddressService::updateAddress address : {}", address);
         log.info("AddressService::updateAddress updatedAddress : {}", updatedAddress);
@@ -98,4 +78,11 @@ public class AddressService {
         log.info("AddressService::updateAddress finished");
         return addressMapper.mapToAddressResponseDto(updatedAddress);
     }
+
+    private Address getAddress(String addressId) {
+        return addressRepository.findById(addressId)
+                .orElseThrow(() ->
+                        new NullPointerException("Address not found with id : " + addressId));
+    }
+
 }

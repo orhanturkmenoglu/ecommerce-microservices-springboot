@@ -2,8 +2,10 @@ package com.example.product_service.service;
 
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
+import com.example.product_service.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.product_service.dto.productDto.ProductRequestDto;
 import com.example.product_service.dto.productDto.ProductResponseDto;
+import com.example.product_service.dto.productDto.ProductUpdateRequestDto;
 import com.example.product_service.enums.Category;
 import com.example.product_service.exception.InventoryNotFoundException;
 import com.example.product_service.external.InventoryClientService;
@@ -81,7 +83,6 @@ public class ProductService {
         return productMapper.mapToProductResponseDto(saveProduct);
     }
 
-
     // read
     public List<ProductResponseDto> getProductsAll() throws ServiceUnavailableException {
         log.info("ProductService::getProductsAll started");
@@ -120,26 +121,31 @@ public class ProductService {
     @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
-    public ProductResponseDto updateProductById(ProductRequestDto productRequestDto) {
+    public ProductResponseDto updateProductById(ProductUpdateRequestDto productUpdateRequestDto) {
         log.info("ProductService::updateProductById started");
 
-        Product product = getProduct(productRequestDto.getId());
+        Product product = getProduct(productUpdateRequestDto.getId());
         log.info("ProductService::updateProductById - product {}", product);
 
-        Product updatedProduct = getUpdatedProduct(productRequestDto, product);
+
+        Product updatedProduct = getUpdatedProduct(productUpdateRequestDto, product);
         log.info("ProductService::updateProductById - updatedProduct {}", updatedProduct);
 
+        // stok id kontrol et.
+        inventoryClientService.getInventoryById(productUpdateRequestDto.getInventoryUpdateRequestDto().getInventoryId());
 
         // inventory-service stok takibini güncelle.
         Inventory inventory = updatedProduct.getInventory();
-        InventoryRequestDto mapToInventoryRequestDto = productMapper.mapToInventoryRequestDto(inventory);
+        inventory.setProductId(productUpdateRequestDto.getInventoryUpdateRequestDto().getProductId());
+        inventory.setStockQuantity(productUpdateRequestDto.getInventoryUpdateRequestDto().getNewQuantity());
+        InventoryUpdateRequestDto mapToInventoryUpdateRequestDto = productMapper.mapToInventoryUpdateRequestDto(inventory);
 
         log.info("ProductService::updateProductById - inventory {}", inventory);
-        log.info("ProductService::updateProductById - mapToInventoryRequestDto {}", mapToInventoryRequestDto);
+        log.info("ProductService::updateProductById - mapToInventoryRequestDto {}", mapToInventoryUpdateRequestDto);
 
 
         inventoryClientService.updateInventory(updatedProduct.getInventoryId(),
-                mapToInventoryRequestDto);
+                mapToInventoryUpdateRequestDto);
 
         log.info("ProductService::updateProductById finished");
         return productMapper.mapToProductResponseDto(updatedProduct);
@@ -251,13 +257,11 @@ public class ProductService {
                 new NullPointerException(ProductMessage.PRODUCT_NOT_FOUND + productId));
     }
 
-    private Product getUpdatedProduct(ProductRequestDto productRequestDto, Product product) {
-        product.setId(productRequestDto.getId());
-        product.setName(productRequestDto.getName());
-        product.setDescription(productRequestDto.getDescription());
-        product.setPrice(productRequestDto.getPrice());
-        product.setCategory(productRequestDto.getCategory());
-        product.setInventoryId(productRequestDto.getInventoryRequestDto().getId());
+    private Product getUpdatedProduct(ProductUpdateRequestDto productUpdateRequestDto, Product product) {
+        product.setName(productUpdateRequestDto.getName());
+        product.setDescription(productUpdateRequestDto.getDescription());
+        product.setPrice(productUpdateRequestDto.getPrice());
+        product.setCategory(productUpdateRequestDto.getCategory());
         return productRepository.save(product);
     }
 

@@ -2,6 +2,7 @@ package com.example.product_service.controller;
 
 import com.example.product_service.dto.productDto.ProductRequestDto;
 import com.example.product_service.dto.productDto.ProductResponseDto;
+import com.example.product_service.dto.productDto.ProductUpdateRequestDto;
 import com.example.product_service.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -91,8 +92,8 @@ public class ProductController {
     }
 
     @PutMapping
-    public ResponseEntity<ProductResponseDto> updateProductById(@RequestBody ProductRequestDto productRequestDto) {
-        ProductResponseDto productById = productService.updateProductById(productRequestDto);
+    public ResponseEntity<ProductResponseDto> updateProductById(@RequestBody ProductUpdateRequestDto productUpdateRequestDto) {
+        ProductResponseDto productById = productService.updateProductById(productUpdateRequestDto);
         return ResponseEntity.ok(productById);
     }
 
