@@ -29,7 +29,6 @@ public class InventoryMapper {
                 .id(inventory.getId())
                 .productId(inventory.getProductId())
                 .stockQuantity(inventory.getStockQuantity())
-                .lastUpdated(LocalDateTime.now())
                 .build();
     }
 

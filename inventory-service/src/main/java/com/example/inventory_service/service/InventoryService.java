@@ -65,8 +65,10 @@ public class InventoryService {
     public InventoryResponseDto getInventoryById(String id) {
         log.info("InventoryService::getInventoryById started");
 
-        Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new NullPointerException("Inventory not found for inventory ID: " + id));
+        Inventory inventory = getInventory(id);
+
+        log.info("InventoryService::getInventoryById inventory :{}", inventory);
+
 
         log.info("InventoryService::getInventoryById finished");
         return inventoryMapper.mapToInventoryResponseDto(inventory);
@@ -77,11 +79,20 @@ public class InventoryService {
     public InventoryResponseDto updateInventory(String inventoryId, InventoryUpdateRequestDto inventoryUpdateRequestDto) {
         log.info("InventoryService::updateInventory started");
 
-        InventoryResponseDto inventoryById = getInventoryById(inventoryId);
+        Inventory inventory = getInventory(inventoryId);
+        InventoryResponseDto inventoryById = inventoryMapper.mapToInventoryResponseDto(inventory);
         inventoryById.setStockQuantity(inventoryUpdateRequestDto.getNewQuantity());
+
+        log.info("InventoryService::updateInventory inventory :{} ," +
+                "inventoryById : {}", inventory,inventoryById);
+
 
         Inventory mapToInventory = inventoryMapper.mapToInventory(inventoryById);
         Inventory updatedInventory = inventoryRepository.save(mapToInventory);
+
+        log.info("InventoryService::updateInventory mapToInventory :{} ," +
+                "updatedInventory : {}", mapToInventory,updatedInventory);
+
 
         log.info("InventoryService::updateInventory finished");
         return inventoryMapper.mapToInventoryResponseDto(updatedInventory);
@@ -96,5 +107,10 @@ public class InventoryService {
         inventoryRepository.delete(mapToInventory);
 
         log.info("InventoryService::deleteInventory finished");
+    }
+
+    private Inventory getInventory(String id) {
+        return inventoryRepository.findById(id)
+                .orElseThrow(() -> new NullPointerException("Inventory not found for inventory ID: " + id));
     }
 }

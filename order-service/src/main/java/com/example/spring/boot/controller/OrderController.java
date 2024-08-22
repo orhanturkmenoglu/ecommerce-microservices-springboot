@@ -2,6 +2,7 @@ package com.example.spring.boot.controller;
 
 import com.example.spring.boot.dto.orderDto.OrderRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderResponseDto;
+import com.example.spring.boot.dto.orderDto.OrderUpdateRequestDto;
 import com.example.spring.boot.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,15 @@ public class OrderController {
         }
     }
 
+
+    //http://localhost:8081/api/v1/orders?startDateTime=2024-08-21 10:00:00&endDateTime=2024-08-21 12:00:00
+    @GetMapping
+    public ResponseEntity<List<OrderResponseDto>> getByOrderDateBetween(@RequestParam("startDateTime") String startDateTime,
+                                                                        @RequestParam("endDateTime") String endDateTime) {
+        List<OrderResponseDto> orderResponseDtoList = orderService.getByOrderDateBetween(startDateTime,endDateTime);
+        return ResponseEntity.ok(orderResponseDtoList);
+    }
+
     // 3. Yeni bir sipariş oluşturma
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto orderRequestDto) {
@@ -45,9 +55,9 @@ public class OrderController {
 
     // 4. Var olan siparişi güncelleme
     @PutMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable String id, @RequestBody OrderRequestDto orderRequestDto) {
+    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable String id, @RequestBody OrderUpdateRequestDto orderUpdateRequestDto) {
         try {
-            OrderResponseDto updatedOrder = orderService.updateOrder(id, orderRequestDto);
+            OrderResponseDto updatedOrder = orderService.updateOrder(id, orderUpdateRequestDto);
             return ResponseEntity.ok(updatedOrder);
         } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);

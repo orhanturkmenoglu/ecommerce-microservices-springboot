@@ -5,6 +5,7 @@ import com.example.customer_service.dto.addressDto.AddressResponseDto;
 import com.example.customer_service.model.Address;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ public class AddressMapper {
                 .street(addressRequestDto.getStreet())
                 .zipCode(addressRequestDto.getZipCode())
                 .description(addressRequestDto.getDescription())
+                .createdDate(LocalDateTime.now())
                 .build();
     }
 
@@ -30,6 +32,7 @@ public class AddressMapper {
                 .street(addressResponseDto.getStreet())
                 .zipCode(addressResponseDto.getZipCode())
                 .description(addressResponseDto.getDescription())
+                .createdDate(addressResponseDto.getCreatedDate())
                 .build();
     }
 
@@ -42,6 +45,7 @@ public class AddressMapper {
                 .street(address.getStreet())
                 .zipCode(address.getZipCode())
                 .description(address.getDescription())
+                .createdDate(address.getCreatedDate())
                 .build();
     }
 

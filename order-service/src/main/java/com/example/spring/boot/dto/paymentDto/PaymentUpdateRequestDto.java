@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PaymentUpdateRequestDto {
 
+    @NotEmpty(message = "Payment orderId cannot be empty")
+    private String customerId;
+
     @NotEmpty(message = "Payment order id cannot be empty")
     private String orderId;
 

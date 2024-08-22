@@ -1,6 +1,7 @@
 package com.example.product_service.dto.productDto;
 
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
+import com.example.product_service.enums.Category;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +27,7 @@ public class ProductRequestDto implements Serializable {
     private String description;
 
     @NotEmpty(message = "Product category cannot be empty ")
-    private String category;
+    private Category category;
 
     @NotNull(message = "Product price cannot be null")
     @Min(message = "Product price must be greater than zero", value = 0)
