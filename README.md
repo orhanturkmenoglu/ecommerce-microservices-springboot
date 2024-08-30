@@ -14,9 +14,12 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * Health Checks: Her bir mikroservisin sağlık durumunu izleme.
 * RabbitMQ: Asenkron iletişim ve stok güncelleme mekanizması.
 * Zipkin: Dağıtık izleme ve performans izleme için.
+* Redis: Hızlı veri erişimi ve önbellekleme için.
+* Swagger UI: API belgeleri için kullanıcı dostu arayüz.
+* Docker ve Docker Compose: Sistem bileşenlerinin sorunsuz çalışmasını sağlamak için kapsayıcı yönetimi ve konfigürasyonu.
 * Okta (Yakında): Kimlik doğrulama ve yetkilendirme için güvenli ve kullanıcı dostu bir çözüm.
 
-📌 Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerçekleştikten sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir.
+📌  Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerçekleştikten sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir. Yeni Özellikler: Kargo servisi eklendi; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır. Ayrıca, Redis entegrasyonu ile hızlı veri erişimi sağlandı, Swagger UI entegrasyonu ile API belgeleri kolayca erişilebilir hale getirildi ve Docker ile Docker Compose desteği ile sistemin çeşitli ortamlarda tutarlı çalışması sağlandı.
 
 📂 Proje Yapısı:
 
@@ -29,6 +32,7 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * inventory-service: Envanter ve stok seviyelerini yönetir.
 * order-service: Müşteri siparişlerini yönetir.
 * payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
+* cargo-service: Kargo durumlarını yönetir; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır.
   
 🌐 Endpointler:
 
@@ -38,6 +42,7 @@ Customer Service:
 * GET /api/v1/customers/all: Tüm müşterileri listele.
 * GET /api/v1/customers/{customerId}: Belirli bir müşteri bilgilerini ID ile getir.
 * GET /api/v1/customers/customerByFirstName: Belirli bir isimle müşterileri listele.
+* GET /api/v1/customers/track-cargo/{trackingNumber} :Müşterinin belirli bir kargonun ayrıntılarını izleme numarasına göre almanıza olanak tanır.
 * PUT /api/v1/customers/{customerId}: Müşteri bilgilerini güncelle. (Bu işlem sırasında müşteri adresi güncellenmez. Adres güncellemesi için ayrı bir endpoint kullanılmalıdır.)
 * DELETE /api/v1/customers/{customerId}: Müşteri kaydını sil.
 
@@ -91,6 +96,15 @@ Payment Service:
 * PUT /api/v1/payments: Ödemeyi güncelle (Ödeme yapıldıktan sonra RabbitMQ üzerinden stok miktarı güncellenir).
 * DELETE /api/v1/payments/{paymentId}: Ödemeyi sil.
 * POST /api/v1/payments/cancelPayment/{paymentId}: Belirli bir ödeme ID'si ile ödemeyi iptal et.
+
+Cargo Service:
+* POST /api/v1/cargos: Yeni bir kargo oluşturur.
+* GET /api/v1/cargos/all: Tüm kargoların listesini getirir.
+* GET /api/v1/cargos/{cargoId}: Belirli bir ID'ye sahip kargoyu getirir.
+* GET /api/v1/cargos/order/{orderId}: Belirli bir sipariş ID'sine bağlı kargoyu getirir.
+* GET /api/v1/cargos/trackingNumber/{trackingNumber}: Belirli bir takip numarasına sahip kargoyu getirir.
+* PUT /api/v1/cargos: Mevcut bir kargoyu günceller.
+* DELETE /api/v1/cargos/{cargoId}: Belirli bir ID'ye sahip kargoyu siler.
 
 📈 Gelecekteki Geliştirmeler:
 
