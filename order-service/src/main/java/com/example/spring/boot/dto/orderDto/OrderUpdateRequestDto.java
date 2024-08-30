@@ -1,6 +1,7 @@
 package com.example.spring.boot.dto.orderDto;
 
 import com.example.spring.boot.model.Address;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,26 +17,33 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(description = "Data transfer object for updating an existing order")
 public class OrderUpdateRequestDto implements Serializable {
 
-
+    @Schema(description = "Unique identifier for the customer associated with the order", example = "customer123")
     @NotEmpty(message = "Order customer Id cannot be empty")
     private String customerId;
 
+    @Schema(description = "Unique identifier for the product being ordered", example = "product456")
     @NotEmpty(message = "Order productId cannot be empty")
     private String productId;
 
+    @Schema(description = "Unique identifier for the inventory related to the order", example = "inventory789")
     @NotEmpty(message = "Order inventoryId cannot be empty")
     private String inventoryId;
 
+    @Schema(description = "Unique identifier for the payment related to the order", example = "payment123")
     @NotEmpty(message = "Order paymentId cannot be empty")
     private String paymentId;
 
+    @Schema(description = "Date and time when the order was placed or last updated", example = "2024-08-30T14:00:00")
     private LocalDateTime orderDate;
 
+    @Schema(description = "Quantity of the product being ordered", example = "10")
     @NotNull(message = "Order quantity cannot be null")
-    @Min(value = 0, message = "Order quantity must be greater than zero")
+    @Min(value = 1, message = "Order quantity must be greater than zero")
     private int quantity;
 
+    @Schema(description = "Shipping address for the order")
     private Address shippingAddress;
 }

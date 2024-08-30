@@ -15,16 +15,20 @@ public class RabbitMQConfig {
     @Value("${rabbit.mq.routing.key}")
     private String routingKey;
 
+
+
     @Value("${rabbit.mq.exchange.name}")
     private String exchange;
 
     @Value("${rabbit.mq.queue.name}")
     private String queue;
 
+
     @Bean
     public Queue queue() {
         return new Queue(queue);
     }
+
 
 
     @Bean

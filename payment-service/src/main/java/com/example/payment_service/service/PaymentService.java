@@ -4,15 +4,18 @@ import com.example.payment_service.dto.orderDto.OrderResponseDto;
 import com.example.payment_service.dto.paymentDto.PaymentRequestDto;
 import com.example.payment_service.dto.paymentDto.PaymentResponseDto;
 import com.example.payment_service.dto.paymentDto.PaymentUpdateRequestDto;
+import com.example.payment_service.enums.CargoStatus;
 import com.example.payment_service.enums.PaymentStatus;
 import com.example.payment_service.enums.PaymentType;
 import com.example.payment_service.exception.InsufficientStockException;
 import com.example.payment_service.exception.PaymentCustomerNotFoundException;
 import com.example.payment_service.exception.PaymentNotFoundException;
+import com.example.payment_service.external.CargoClientService;
 import com.example.payment_service.external.CustomerClientService;
 import com.example.payment_service.external.InventoryServiceClient;
 import com.example.payment_service.external.OrderServiceClient;
 import com.example.payment_service.mapper.PaymentMapper;
+import com.example.payment_service.model.Cargo;
 import com.example.payment_service.model.Customer;
 import com.example.payment_service.model.Inventory;
 import com.example.payment_service.model.Payment;
@@ -24,6 +27,8 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +48,8 @@ public class PaymentService {
     private final InventoryServiceClient inventoryServiceClient;
 
     private final CustomerClientService customerClientService;
+
+    private final CargoClientService cargoClientService;
 
     private final PaymentMapper paymentMapper;
 
@@ -76,8 +83,14 @@ public class PaymentService {
         log.info("PaymentResponseDto::processPayment - saved payment: {}", savedPayment);
 
 
-        // ödeme başarılı ise stok rabbitmq yardımı ile güncellenecek...
+        // ödeme başarılı ise kontrol et. stok rabbitmq yardımı ile güncellenecek...
         updatedInventory(order, inventory);
+
+        // ödeme başarılı ise cargo statüsünü güncelle.
+        if (savedPayment.getPaymentStatus().name().equals(PaymentStatus.COMPLETED.name())) {
+           updateCargoStatus(savedPayment);
+        }
+
 
         PaymentResponseDto paymentResponseDto = paymentMapper.mapToPaymentResponseDto(savedPayment);
         paymentResponseDto.setCustomer(customer);
@@ -86,7 +99,7 @@ public class PaymentService {
         return paymentResponseDto;
     }
 
-
+    @Cacheable(value = "payments", key = "#paymentId")
     public PaymentResponseDto getPaymentById(String paymentId) {
         log.info("PaymentService::getPaymentById started");
 
@@ -97,6 +110,7 @@ public class PaymentService {
         return paymentMapper.mapToPaymentResponseDto(payment);
     }
 
+    @Cacheable(value = "payments", key = "#paymentType")
     public List<PaymentResponseDto> getPaymentType(String paymentType) {
         log.info("PaymentService::getPaymentType started");
 
@@ -126,6 +140,7 @@ public class PaymentService {
         return paymentMapper.maptoPaymentResponseDtoList(payments);
     }
 
+    @Cacheable(value = "payments", key = "'dateRange:' + #startDate + '-' + #endDate")
     public List<PaymentResponseDto> getPaymentDateBetween(String startDate, String endDate) {
         log.info("PaymentService::getPaymentDateBetween started");
 
@@ -144,6 +159,7 @@ public class PaymentService {
         return paymentMapper.maptoPaymentResponseDtoList(paymentList);
     }
 
+    @Cacheable(value = "payments", key = "#customerId")
     public PaymentResponseDto getPaymentCustomerById(String customerId) {
         log.info("PaymentService::getPaymentCustomerById started");
 
@@ -159,6 +175,7 @@ public class PaymentService {
     @CircuitBreaker(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @Retry(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @RateLimiter(name = "processPaymentLimiter", fallbackMethod = "paymentServiceFallback")
+    @CacheEvict(value = "payments", key = "#paymentUpdateRequestDto.customerId",allEntries = true)
     public PaymentResponseDto updatePayment(PaymentUpdateRequestDto paymentUpdateRequestDto) {
         log.info("PaymentService::updatePayment started");
 
@@ -204,7 +221,7 @@ public class PaymentService {
         log.info("PaymentService::cancelPaymentById - Payment cancelled successfully. Payment ID: {}", paymentId);
     }
 
-
+    @CacheEvict(value = "payments", key = "#paymentId",allEntries = true)
     public void deleteByPaymentId(String paymentId) {
         log.info("PaymentService::deleteByPaymentId started");
 
@@ -245,6 +262,22 @@ public class PaymentService {
         return paymentRepository.findByCustomerId(customerId)
                 .orElseThrow(() ->
                         new PaymentCustomerNotFoundException(PaymentMessage.PAYMENT_CUSTOMER_NOT_FOUND + customerId));
+    }
+
+    private void updateCargoStatus(Payment savedPayment) {
+        Cargo cargo = Cargo.builder()
+                .id(savedPayment.getCargoId())
+                .customerId(savedPayment.getCustomerId())
+                .orderId(savedPayment.getOrderId())
+                .status(CargoStatus.IN_TRANSIT)
+                .build();
+
+        try {
+            cargoClientService.updateCargo(cargo);
+            log.info("Cargo status updated for order id: {}", savedPayment.getOrderId());
+        } catch (Exception e) {
+            log.error("Failed to update cargo status for order id: {}", savedPayment.getOrderId(), e);
+        }
     }
 
     private PaymentResponseDto paymentServiceFallback(Exception exception) {

@@ -1,0 +1,241 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    image: api-gateway
+    ports:
+      - "8083:8083"
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - microservice-network
+
+  # Config Server
+  config-server:
+    image: config-server
+    ports:
+      - "8084:8084"
+    networks:
+      - microservice-network
+
+  # Service Registry (Eureka)
+  eureka-server:
+    image: service-registry
+    ports:
+      - "8761:8761"
+    networks:
+      - microservice-network
+
+  # Product Service
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/microservice
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+    depends_on:
+      - mysql-db
+      - eureka-server
+      - config-server
+      - zipkin
+      - redis
+    networks:
+      - microservice-network
+
+  # Inventory Service
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/microservice
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql-db
+      - rabbitmq
+      - zipkin
+      - eureka-server
+      - config-server
+      - redis
+    networks:
+      - microservice-network
+
+  # Order Service
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/microservice
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql-db
+      - zipkin
+      - eureka-server
+      - config-server
+      - redis
+    networks:
+      - microservice-network
+
+  # Customer Service
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/microservice
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql-db
+      - zipkin
+      - eureka-server
+      - config-server
+      - redis
+    networks:
+      - microservice-network
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/payment-service
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mongo-db
+      - rabbitmq
+      - zipkin
+      - eureka-server
+      - config-server
+      - redis
+    networks:
+      - microservice-network
+
+  #Cargo Service
+  cargo-service:
+    build:
+      context: ./cargo-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/microservice
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - EUREKA_CLIENT_SERVICE_DEFAULT_ZONE=http://localhost:8761/eureka/
+      - CONFIG_SERVER_URL=http://localhost:8084
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql-db
+      - zipkin
+      - eureka-server
+      - config-server
+      - redis
+    networks:
+      - microservice-network
+
+  # MySQL Database
+  mysql-db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: microservice
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 12345
+      MYSQL_ROOT_PASSWORD: 12345
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - microservice-network
+
+  # MongoDB Database
+  mongo-db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - microservice-network
+
+  # Zipkin for Distributed Tracing
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - microservice-network
+
+  # RabbitMQ for Messaging
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # RabbitMQ port
+      - "15672:15672"  # Management UI port
+    networks:
+      - microservice-network
+
+
+    # Redis for Caching
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - microservice-network
+
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  mongo-data:

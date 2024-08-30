@@ -19,6 +19,8 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,6 +86,7 @@ public class ProductService {
     }
 
     // read
+    @Cacheable(value = "products", key = "'all'")
     public List<ProductResponseDto> getProductsAll() throws ServiceUnavailableException {
         log.info("ProductService::getProductsAll started");
 
@@ -98,6 +101,7 @@ public class ProductService {
     }
 
     // getProductById
+    @Cacheable(value = "products", key = "#productId")
     public ProductResponseDto getProductById(String productId) {
         log.info("ProductService::getProductById started");
 
@@ -108,6 +112,7 @@ public class ProductService {
     }
 
     // getInventoryById
+    @Cacheable(value = "products", key = "#inventoryId")
     public ProductResponseDto getInventoryById(String inventoryId) {
         log.info("ProductService::getInventoryById started");
         Product product = productRepository.findByInventoryId(inventoryId).orElseThrow(()
@@ -121,6 +126,7 @@ public class ProductService {
     @CircuitBreaker(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @Retry(name = "inventoryServiceBreaker", fallbackMethod = "inventoryServiceFallback")
     @RateLimiter(name = "createProductLimiter", fallbackMethod = "inventoryServiceFallback")
+    @CacheEvict(value = "products", key = "#productUpdateRequestDto.id",allEntries = true)
     public ProductResponseDto updateProductById(ProductUpdateRequestDto productUpdateRequestDto) {
         log.info("ProductService::updateProductById started");
 
@@ -153,6 +159,7 @@ public class ProductService {
 
 
     // delete
+    @CacheEvict(value = "products", key = "#productId",allEntries = true)
     public String deleteProductById(String productId) {
         log.info("ProductService::deleteProductById started");
 
@@ -171,6 +178,7 @@ public class ProductService {
 
 
     // Get product names by price range using stream api
+    @Cacheable(value = "productsByPriceRange", key = "'range:' + #minPrice + '-' + #maxPrice")
     public List<ProductResponseDto> getProductByPriceRange(double minPrice, double maxPrice) {
         log.info("ProductService::getProductNamesByPriceRange started");
 
@@ -185,6 +193,8 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+
+    @Cacheable(value = "productsByPrice", key = "'greaterOrEqual:' + #price")
     public List<ProductResponseDto> getProductByPriceGreaterThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceGreaterThanEqual started");
 
@@ -201,6 +211,7 @@ public class ProductService {
     }
 
 
+    @Cacheable(value = "productsByPrice", key = "'lessOrEqual:' + #price")
     public List<ProductResponseDto> getProductByPriceLessThanEqual(double price) {
         log.info("ProductService::getProductNamesByPriceLessThanEqual started");
 
@@ -214,6 +225,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "productsByQuantity", key = "#quantity")
     public List<ProductResponseDto> getProductByQuantity(int quantity) {
         log.info("ProductService::getProductByQuantity started");
         List<Product> productList = getProductsList();
@@ -226,6 +238,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "productsByCategory", key = "#category")
     public List<ProductResponseDto> getProductByCategory(String category) {
         log.info("ProductService::getProductByCategory started");
 

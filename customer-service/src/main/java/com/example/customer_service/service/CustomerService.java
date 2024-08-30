@@ -12,6 +12,8 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,6 @@ public class CustomerService {
 
     private final CustomerMapper customerMapper;
 
-
     @Transactional
     @CircuitBreaker(name = "customerServiceBreaker", fallbackMethod = "customerServiceFallback")
     @Retry(name = "customerServiceBreaker", fallbackMethod = "customerServiceFallback")
@@ -42,7 +43,7 @@ public class CustomerService {
 
         List<Address> addressList = customerRequestDto.getAddressList();
 
-        if (addressList !=null){
+        if (addressList != null) {
             addressList.forEach(address -> {
                 address.setCreatedDate(LocalDateTime.now());
             });
@@ -59,6 +60,7 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDto(savedCustomer);
     }
 
+    @Cacheable(value = "customers", key = "'all'")
     public List<CustomerResponseDto> getCustomersAll() {
         log.info("CustomerService::getCustomersAll started");
 
@@ -69,6 +71,7 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDtoList(customerList);
     }
 
+    @Cacheable(value = "customers", key = "#customerId")
     public CustomerResponseDto getCustomerById(String customerId) {
         log.info("CustomerService::getCustomerById started");
 
@@ -80,7 +83,7 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDto(customer);
     }
 
-
+    @Cacheable(value = "customers", key = "#firstName")
     public List<CustomerResponseDto> getCustomersByFirstName(String firstName) {
         log.info("CustomerService::getCustomerByFirstName started");
 
@@ -95,7 +98,7 @@ public class CustomerService {
         return customerMapper.mapToCustomerResponseDtoList(customers);
     }
 
-
+    @CacheEvict(value = "customers", key = "#customerId", allEntries = true)
     public void deleteCustomerById(String customerId) {
         log.info("CustomerService::deleteCustomerById started");
 
@@ -107,7 +110,7 @@ public class CustomerService {
         log.info("CustomerService::deleteCustomerById finished");
     }
 
-
+    @CacheEvict(value = "customers", key = "#customerId", allEntries = true)
     public CustomerResponseDto updateCustomer(String customerId, CustomerUpdateRequestDto customerUpdateRequestDto) {
         log.info("CustomerService::updateCustomer started");
 

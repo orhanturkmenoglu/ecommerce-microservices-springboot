@@ -9,6 +9,8 @@ import com.example.inventory_service.model.Inventory;
 import com.example.inventory_service.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class InventoryService {
         return inventoryMapper.mapToInventoryResponseDto(savedInventory);
     }
 
+    @Cacheable(value = "inventories",key = "'all'")
     public List<InventoryResponseDto> getAllInventories() {
         log.info("InventoryService::getAllInventories started");
 
@@ -49,7 +52,7 @@ public class InventoryService {
         return inventoryMapper.mapToInventoryResponseDtoList(inventoryList);
     }
 
-
+    @Cacheable(value = "inventories",key = "#productId")
     public InventoryResponseDto getInventoryByProductId(String productId) {
         log.info("InventoryService::getInventoryByProductId started");
 
@@ -61,7 +64,7 @@ public class InventoryService {
         return inventoryMapper.mapToInventoryResponseDto(inventory);
     }
 
-
+    @Cacheable(value = "inventories",key = "#id")
     public InventoryResponseDto getInventoryById(String id) {
         log.info("InventoryService::getInventoryById started");
 
@@ -76,6 +79,7 @@ public class InventoryService {
 
 
     @Transactional
+    @CacheEvict(value = "inventories",key = "#inventoryId",allEntries = true)
     public InventoryResponseDto updateInventory(String inventoryId, InventoryUpdateRequestDto inventoryUpdateRequestDto) {
         log.info("InventoryService::updateInventory started");
 
@@ -94,6 +98,7 @@ public class InventoryService {
         return inventoryMapper.mapToInventoryResponseDto(updatedInventory);
     }
 
+    @CacheEvict(value = "inventories",key = "#productId",allEntries = true)
     public void deleteInventory(String productId) {
         log.info("InventoryService::deleteInventory started");
 

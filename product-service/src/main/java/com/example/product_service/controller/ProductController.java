@@ -4,6 +4,14 @@ import com.example.product_service.dto.productDto.ProductRequestDto;
 import com.example.product_service.dto.productDto.ProductResponseDto;
 import com.example.product_service.dto.productDto.ProductUpdateRequestDto;
 import com.example.product_service.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,15 +26,22 @@ import java.util.List;
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Product Api", description = "Product management APIs")
 public class ProductController {
 
     private final ProductService productService;
 
+    private int count = 1;
 
-    int count = 1;
     @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(@Valid
-                                                            @RequestBody ProductRequestDto productRequestDto) {
+    @Operation(summary = "Create a new product", description = "Creates a new product with the provided details.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Product created successfully",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+
+    public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) {
         log.info("Retry Count : {}", count);
         count++;
         if (productRequestDto == null) {
@@ -37,19 +52,35 @@ public class ProductController {
     }
 
     @GetMapping("/all")
+    @Operation(summary = "Get all products", description = "Retrieves a list of all products.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+
     public ResponseEntity<List<ProductResponseDto>> getProductsAll() throws ServiceUnavailableException {
         List<ProductResponseDto> productsAll = productService.getProductsAll();
         return ResponseEntity.ok(productsAll);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable String id) {
+    @Operation(summary = "Get a product by ID", description = "Retrieves a product by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @Parameter(description = "ID of the product to be retrieved") @PathVariable String id) {
         ProductResponseDto productById = productService.getProductById(id);
         return ResponseEntity.ok(productById);
     }
 
+
     @GetMapping("/inventoryById/{inventoryId}")
-    public ResponseEntity<ProductResponseDto> getInventoryById(@PathVariable String inventoryId) {
+    @Operation(summary = "Get inventory by ID", description = "Retrieves product inventory by inventory ID.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+    public ResponseEntity<ProductResponseDto> getInventoryById(
+            @Parameter(description = "ID of the inventory to be retrieved") @PathVariable String inventoryId) {
         ProductResponseDto productResponseDto = productService.getInventoryById(inventoryId);
         return ResponseEntity.ok(productResponseDto);
     }
@@ -57,48 +88,84 @@ public class ProductController {
 
     // http://localhost:8080/api/v1/products?minPrice=12&maxPrice=20;
     @GetMapping("/productByPriceRange")
-    public ResponseEntity<List<ProductResponseDto>> getProductByPriceRange(@RequestParam("minPrice") double minPrice,
-                                                                           @RequestParam("maxPrice") double maxPrice) {
-
+    @Operation(summary = "Get products by price range", description = "Retrieves products within a specified price range.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+    public ResponseEntity<List<ProductResponseDto>> getProductByPriceRange(
+            @Parameter(description = "Minimum price") @RequestParam("minPrice") double minPrice,
+            @Parameter(description = "Maximum price") @RequestParam("maxPrice") double maxPrice) {
         List<ProductResponseDto> productNamesByPriceRange = productService.getProductByPriceRange(minPrice, maxPrice);
         return ResponseEntity.ok(productNamesByPriceRange);
     }
 
+
     @GetMapping("/productByQuantity")
-    public ResponseEntity<List<ProductResponseDto>> getProductByQuantity(@RequestParam("quantity") int quantity) {
+    @Operation(summary = "Get products by quantity", description = "Retrieves products by specified quantity.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+
+    public ResponseEntity<List<ProductResponseDto>> getProductByQuantity(
+            @Parameter(description = "Quantity of the product") @RequestParam("quantity") int quantity) {
         List<ProductResponseDto> productNamesByQuantity = productService.getProductByQuantity(quantity);
         return ResponseEntity.ok(productNamesByQuantity);
     }
 
+
     @GetMapping("/productByPriceGreaterThanEqual")
-    public ResponseEntity<List<ProductResponseDto>> getProductByPriceGreaterThanEqual(
-            @RequestParam("price") double price) {
+    @Operation(summary = "Get products by price greater than or equal to", description = "Retrieves products with price greater than or equal to specified value.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+
+    public ResponseEntity<List<ProductResponseDto>> getProductByPriceGreaterThanEqual(@Parameter(description = "Price threshold")
+                                                                                      @RequestParam("price") double price) {
         List<ProductResponseDto> productNamesByPriceGreaterThan = productService.getProductByPriceGreaterThanEqual(price);
         return ResponseEntity.ok(productNamesByPriceGreaterThan);
     }
 
     @GetMapping("/productByPriceLessThanEqual")
-    public ResponseEntity<List<ProductResponseDto>> getProductByPriceLessThanEqual(
-            @RequestParam("price") double price) {
+    @Operation(summary = "Get products by price less than or equal to", description = "Retrieves products with price less than or equal to specified value.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+    public ResponseEntity<List<ProductResponseDto>> getProductByPriceLessThanEqual(@Parameter(description = "Price threshold")
+                                                                                   @RequestParam("price") double price) {
 
         List<ProductResponseDto> productByPriceLessThanEqual = productService.getProductByPriceLessThanEqual(price);
         return ResponseEntity.ok(productByPriceLessThanEqual);
     }
 
+
     @GetMapping("/productByCategory")
-    public ResponseEntity<List<ProductResponseDto>> getProductByCategory(@RequestParam("category") String category) {
+    @Operation(summary = "Get products by category", description = "Retrieves products by specified category.")
+    @ApiResponse(responseCode = "200", description = "Successful operation",
+            content = @Content(schema = @Schema(implementation = ProductResponseDto.class)))
+    public ResponseEntity<List<ProductResponseDto>> getProductByCategory(@Parameter(description = "Category of the products")
+                                                                         @RequestParam("category") String category) {
         List<ProductResponseDto> productByCategory = productService.getProductByCategory(category);
         return ResponseEntity.ok(productByCategory);
     }
 
+
     @PutMapping
-    public ResponseEntity<ProductResponseDto> updateProductById(@RequestBody ProductUpdateRequestDto productUpdateRequestDto) {
+    @Operation(summary = "Update product by ID", description = "Updates a product's details by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product updated successfully",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<ProductResponseDto> updateProductById(@RequestBody(description = "Product update details")
+                                                                ProductUpdateRequestDto productUpdateRequestDto) {
         ProductResponseDto productById = productService.updateProductById(productUpdateRequestDto);
         return ResponseEntity.ok(productById);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProductById(@PathVariable String id) {
+    @Operation(summary = "Delete product by ID", description = "Deletes a product by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<String> deleteProductById(@Parameter(description = "ID of the product to be deleted")
+                                                    @PathVariable String id) {
         return ResponseEntity.ok(productService.deleteProductById(id));
     }
 }

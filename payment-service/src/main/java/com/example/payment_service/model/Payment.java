@@ -28,6 +28,8 @@ public class Payment implements Serializable {
 
     private String orderId;
 
+    private String cargoId;
+
     private int quantity;
 
     private Double amount;

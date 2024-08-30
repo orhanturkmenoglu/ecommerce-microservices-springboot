@@ -18,27 +18,19 @@ spring:
       hibernate:
         format_sql: true
 
+  #redis config
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
 
-  rabbitmq:
-    host: localhost
-    username: guest
-    password: guest
-    port: 5672
+# swagger-ui configç
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html  #default path.
 
-
-
-rabbit:
-  mq:
-    exchange:
-      name: e_commerce_exchange
-    routing:
-      key: e_commerce_routing_key
-      create:
-        product: e_commerce_routing_key_create_product
-    queue:
-      name: e_commerce_queue
-      create:
-        product: e_commerce_queue_create_product
 
   config:
     import: optional:configserver:http://localhost:8084

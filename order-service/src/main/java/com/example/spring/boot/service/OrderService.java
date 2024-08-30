@@ -1,5 +1,7 @@
 package com.example.spring.boot.service;
 
+import com.example.spring.boot.dto.cargoDto.CargoRequestDto;
+import com.example.spring.boot.dto.cargoDto.CargoUpdateRequestDto;
 import com.example.spring.boot.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderResponseDto;
@@ -8,10 +10,7 @@ import com.example.spring.boot.dto.paymentDto.PaymentUpdateRequestDto;
 import com.example.spring.boot.enums.OrderStatus;
 import com.example.spring.boot.exception.InsufficientStockException;
 import com.example.spring.boot.exception.OrderNotFoundException;
-import com.example.spring.boot.external.CustomerClientService;
-import com.example.spring.boot.external.InventoryClientService;
-import com.example.spring.boot.external.PaymentClientService;
-import com.example.spring.boot.external.ProductClientService;
+import com.example.spring.boot.external.*;
 import com.example.spring.boot.mapper.OrderMapper;
 import com.example.spring.boot.model.*;
 import com.example.spring.boot.repository.OrderRepository;
@@ -20,6 +19,8 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +43,11 @@ public class OrderService {
 
     private final CustomerClientService customerClientService;
 
+    private final CargoClientService cargoClientService;
+
     private final OrderMapper orderMapper;
 
-
+    @Cacheable(value = "orders", key = "'all'")
     public List<OrderResponseDto> getAllOrders() {
         log.info("OrderService::getAllOrders started");
 
@@ -55,6 +58,7 @@ public class OrderService {
         return orderMapper.mapToOrderResponseDtoList(orderList);
     }
 
+    @Cacheable(value = "orders", key = "#id")
     public OrderResponseDto getOrderById(String id) {
         log.info("OrderService::getOrderById started");
 
@@ -99,11 +103,17 @@ public class OrderService {
         OrderResponseDto savedOrder = getSaveOrder(orderRequestDto, product, address);
         log.info("OrderResponseDto::createOrder - saved order: {}", savedOrder);
 
+        //sipariş oluşturulduğunda cargo-service ile iletişim sağlanıp kargo kaydı oluşturulacak.
+
+        CargoRequestDto cargo = getCargo(savedOrder.getId(), customer.getId());
+
+        cargoClientService.createCargo(cargo);
+
         log.info("Order::createOrder finished.");
         return savedOrder;
     }
 
-
+    @Cacheable(value = "orders", key = "#startDateTime + '-' + #endDateTime")
     public List<OrderResponseDto> getByOrderDateBetween(String startDateTime, String endDateTime) {
         log.info("Order::getByOrderDateBetween started.");
 
@@ -126,6 +136,7 @@ public class OrderService {
     @Retry(name = "orderService", fallbackMethod = "fallbackUpdateOrder")
     @CircuitBreaker(name = "orderServiceBreaker", fallbackMethod = "fallbackUpdateOrder")
     @RateLimiter(name = "createOrderLimiter", fallbackMethod = "fallbackUpdateOrder")
+    @CacheEvict(value = "orders", key = "#id",allEntries = true)
     public OrderResponseDto updateOrder(String id, OrderUpdateRequestDto orderUpdateRequestDto) {
         log.info("OrderService::updateOrder - Order update process started. Order ID: {}", id);
 
@@ -183,11 +194,12 @@ public class OrderService {
         // Envanter güncelleme isteğini Feign Client ile gönderiyoruz
         inventoryClientService.updateInventory(inventory.getId(), updateRequest);
 
+
         log.info("OrderService::updateOrder - Order update process completed successfully. Updated Order ID: {}", updatedOrder.getId());
         return orderMapper.mapToOrderResponseDto(updatedOrder);
     }
 
-
+    @CacheEvict(value = "orders", key = "#id",allEntries = true)
     public void deleteOrder(String id) {
         log.info("OrderService::deleteOrder started");
 
@@ -195,7 +207,7 @@ public class OrderService {
         Order order = orderMapper.mapToOrder(orderResponseDto);
 
         log.info("OrderResponseDto::deleteOrder - orderResponseDto  : {}" +
-                "order : {}", orderResponseDto,order);
+                "order : {}", orderResponseDto, order);
 
         orderRepository.delete(order);
 
@@ -229,6 +241,14 @@ public class OrderService {
                 .lastUpdated(LocalDateTime.now())
                 .build();
     }
+
+    private static CargoRequestDto getCargo(String orderId,String customerId) {
+        return CargoRequestDto.builder()
+                .orderId(orderId)
+                .customerId(customerId)
+                .build();
+    }
+
     private OrderResponseDto fallbackCreateOrder(OrderRequestDto orderRequestDto, Throwable t) {
         log.error("Error creating order: ", t);
         return new OrderResponseDto(); // or any fallback response
@@ -238,5 +258,6 @@ public class OrderService {
         log.error("Error update  order: ", t);
         return new OrderResponseDto(); // or any fallback response
     }
+
 
 }

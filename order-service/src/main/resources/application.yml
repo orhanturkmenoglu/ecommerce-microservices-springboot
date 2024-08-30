@@ -18,6 +18,14 @@ spring:
       hibernate:
         format_sql: true
 
+  #redis config
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
 
   config:
     import: optional:configserver:http://localhost:8084

@@ -9,6 +9,13 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/payment-service
 
+    #redis config
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
 
   rabbitmq:
     host: localhost
@@ -24,6 +31,12 @@ rabbit:
       key: e_commerce_routing_key
     queue:
       name: e_commerce_queue
+    cargo:
+      update:
+        queue:
+          name: e_commerce_cargo_update_queue
+        routing:
+          key: e_commerce_update_cargo_routing_key
 
   config:
     import: optional:configserver:http://localhost:8084

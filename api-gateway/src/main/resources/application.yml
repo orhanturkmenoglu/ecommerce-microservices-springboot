@@ -18,6 +18,7 @@ spring:
           predicates: #Yönlendirme kurallarını belirler. Örneğin,
             - Path=/api/v1/orders/**
 
+
         - id: INVENTORY-SERVICE
           uri: lb://INVENTORY-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
           predicates: #Yönlendirme kurallarını belirler.
@@ -27,6 +28,12 @@ spring:
           uri: lb://PAYMENT-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
           predicates: #Yönlendirme kurallarını belirler.
             - Path=/api/v1/payments/**
+
+        - id: CARGO-SERVICE
+          uri: lb://CARGO-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates: #Yönlendirme kurallarını belirler.
+            - Path=/api/v1/cargo/**
+
 
   config:
     import: optional:configserver:http://localhost:8084

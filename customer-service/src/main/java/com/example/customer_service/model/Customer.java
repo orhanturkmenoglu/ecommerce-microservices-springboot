@@ -6,12 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.validator.constraints.UUID;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-
 
 @Entity
 @Table(name = "customers")
@@ -25,7 +23,6 @@ public class Customer implements Serializable {
     @GeneratedValue
     @UuidGenerator
     private String id;
-
     private String firstName;
     private String lastName;
     private String email;

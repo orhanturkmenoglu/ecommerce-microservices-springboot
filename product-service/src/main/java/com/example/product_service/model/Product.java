@@ -25,7 +25,9 @@ public class Product implements Serializable {
     private String id;
 
     private String inventoryId;
+
     private String name;
+
     private String description;
 
     @Enumerated(EnumType.STRING)

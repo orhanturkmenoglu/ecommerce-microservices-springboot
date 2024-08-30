@@ -25,4 +25,5 @@ public class PaymentMessageSender {
         log.info(String.format("SEND MESSAGE -> : %s", inventory));
         rabbitTemplate.convertAndSend(exchange, routingKey, inventory);
     }
+
 }

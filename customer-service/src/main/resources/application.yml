@@ -17,11 +17,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-
   config:
     import: optional:configserver:http://localhost:8084
 
+  #redis config
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
 management:
   health:
     circuitbreakers: #Bu ayar, uygulamanızın sağlık durumu (health) izleme ve raporlama özelliğini konfigüre eder.
