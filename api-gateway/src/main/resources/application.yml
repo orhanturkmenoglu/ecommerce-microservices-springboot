@@ -13,6 +13,7 @@ spring:
           predicates:  #Yönlendirme kurallarını belirler. Örneğin, Path=/users/** ifadesi, /api/v1/products/** ile başlayan tüm istekleri bu rotaya yönlendirir.
             - Path=/api/v1/products/**
 
+
         - id: ORDER-SERVICE
           uri: lb://ORDER-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
           predicates: #Yönlendirme kurallarını belirler. Örneğin,
@@ -24,23 +25,43 @@ spring:
           predicates: #Yönlendirme kurallarını belirler.
             - Path=/api/v1/inventories/**
 
+
         - id: PAYMENT-SERVICE
           uri: lb://PAYMENT-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
           predicates: #Yönlendirme kurallarını belirler.
             - Path=/api/v1/payments/**
+
 
         - id: CARGO-SERVICE
           uri: lb://CARGO-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
           predicates: #Yönlendirme kurallarını belirler.
             - Path=/api/v1/cargo/**
 
+        - id: CUSTOMER-SERVICE
+          uri: lb://CUSTOMER-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates: #Yönlendirme kurallarını belirler.
+            - Path=/api/v1/customers/**
+
+        - id: AUTH-SERVICE
+          uri: lb://AUTH-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
+          predicates: #Yönlendirme kurallarını belirler.
+            - Path=/api/v1/auth/**
+
 
   config:
     import: optional:configserver:http://localhost:8084
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000/realms/spring-microservice
+
 logging:
   level:
     org.springframework.cloud.gateway : DEBUG #Gateway için log seviyesini belirler.
+
+
 
 
 #eureka:

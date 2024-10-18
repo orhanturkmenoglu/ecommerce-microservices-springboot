@@ -20,6 +20,14 @@ spring:
   config:
     import: optional:configserver:http://localhost:8084
 
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000/realms/spring-microservice
+
+
   #redis config
   data:
     redis:

@@ -30,6 +30,13 @@ spring:
   config:
     import: optional:configserver:http://localhost:8084
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000/realms/spring-microservice
+
+
 management:
   health:
     circuitbreakers: #Bu ayar, uygulamanızın sağlık durumu (health) izleme ve raporlama özelliğini konfigüre eder.

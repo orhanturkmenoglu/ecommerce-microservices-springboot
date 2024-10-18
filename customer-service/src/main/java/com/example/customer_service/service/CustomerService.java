@@ -140,7 +140,7 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
-    private CustomerResponseDto customerServiceFallback(Exception exception) {
+    public CustomerResponseDto customerServiceFallback(Exception exception) {
         log.info("fallback is executed because servise is down :{}", exception.getMessage());
         return CustomerResponseDto.builder().build();
     }
