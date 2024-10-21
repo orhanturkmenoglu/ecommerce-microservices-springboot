@@ -28,12 +28,6 @@ public class OrderController {
     // 1. Tüm siparişleri listeleme
     @GetMapping
     @Operation(summary = "Get all orders", description = "Retrieve a list of all orders")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
         List<OrderResponseDto> orderResponseDtoList = orderService.getAllOrders();
         return ResponseEntity.ok(orderResponseDtoList);
@@ -42,13 +36,6 @@ public class OrderController {
     // 2. Belirli bir siparişi ID'ye göre getirme
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID", description = "Retrieve a specific order by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "204", description = "Order not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable @Parameter(description = "ID of the order to retrieve") String id) {
         try {
             OrderResponseDto orderById = orderService.getOrderById(id);
@@ -61,12 +48,6 @@ public class OrderController {
     // http://localhost:8081/api/v1/orders?startDateTime=2024-08-21 10:00:00&endDateTime=2024-08-21 12:00:00
     @GetMapping("/orderDateBetween")
     @Operation(summary = "Get orders between dates", description = "Retrieve orders between specified start and end dates")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Orders found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<List<OrderResponseDto>> getByOrderDateBetween(
             @RequestParam @Parameter(description = "Start date and time for the query") String startDateTime,
             @RequestParam @Parameter(description = "End date and time for the query") String endDateTime) {
@@ -78,14 +59,7 @@ public class OrderController {
     // 3. Yeni bir sipariş oluşturma
     @PostMapping
     @Operation(summary = "Create a new order", description = "Create a new order with the provided details")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Order created successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody @Parameter(description = "Details of the order to be created") OrderRequestDto orderRequestDto) {
+    public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody @Parameter(description = "Details of the order to be created") OrderRequestDto orderRequestDto) throws Exception {
         OrderResponseDto createdOrder = orderService.createOrder(orderRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
@@ -93,14 +67,6 @@ public class OrderController {
     // 4. Var olan siparişi güncelleme
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing order", description = "Update the details of an existing order by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order updated successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "204", description = "Order not found"),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<OrderResponseDto> updateOrder(
             @PathVariable @Parameter(description = "ID of the order to be updated") String id,
             @RequestBody @Parameter(description = "Updated details of the order") OrderUpdateRequestDto orderUpdateRequestDto) {
@@ -115,11 +81,6 @@ public class OrderController {
     // 5. Belirli bir siparişi silme
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an order", description = "Delete an order by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Order deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Order not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<Void> deleteOrder(@PathVariable @Parameter(description = "ID of the order to be deleted") String id) {
         try {
             orderService.deleteOrder(id);

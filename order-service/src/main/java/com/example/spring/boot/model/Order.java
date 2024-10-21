@@ -24,6 +24,8 @@ public class Order implements Serializable {
     @GeneratedValue
     @UuidGenerator
     private String id;
+
+    private String customerId;
     private String productId;
     private String inventoryId;
     private LocalDateTime orderDate;

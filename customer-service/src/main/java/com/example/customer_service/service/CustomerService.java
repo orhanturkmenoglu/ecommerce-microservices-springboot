@@ -30,11 +30,13 @@ public class CustomerService {
 
     private final CustomerMapper customerMapper;
 
+    private final MailService mailService;
+
     @Transactional
     @CircuitBreaker(name = "customerServiceBreaker", fallbackMethod = "customerServiceFallback")
     @Retry(name = "customerServiceBreaker", fallbackMethod = "customerServiceFallback")
     @RateLimiter(name = "createCustomerLimiter", fallbackMethod = "customerServiceFallback")
-    public CustomerResponseDto createCustomer(CustomerRequestDto customerRequestDto) {
+    public CustomerResponseDto createCustomer(CustomerRequestDto customerRequestDto) throws Exception {
         log.info("CustomerService::createCustomer started");
 
         if (Objects.isNull(customerRequestDto)) {
@@ -55,6 +57,12 @@ public class CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
         log.info("CustomerService::createCustomer savedCustomer : {}", savedCustomer);
+
+        // Müşteri oluştuğuna dair bildirim gönder
+        mailService.sendHtmlEmail(savedCustomer.getEmail(), "Müşteri Oluşturuldu",
+                savedCustomer.getFirstName() + " " + savedCustomer.getLastName(),
+                savedCustomer.getId(),
+                savedCustomer.getEmail());
 
         log.info("CustomerService::createCustomer finished");
         return customerMapper.mapToCustomerResponseDto(savedCustomer);

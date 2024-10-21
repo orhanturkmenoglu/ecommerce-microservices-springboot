@@ -15,7 +15,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   #redis config
   data:
     redis:
@@ -30,6 +29,11 @@ spring:
     username: guest
     password: guest
     port: 5672
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri:  http://localhost:9090/realms/e-commerce-spring
 
 
 rabbit:
@@ -43,13 +47,6 @@ rabbit:
 
   config:
     import: optional:configserver:http://localhost:8084
-
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
 
 
 management:

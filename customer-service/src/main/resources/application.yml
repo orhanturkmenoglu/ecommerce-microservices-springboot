@@ -6,6 +6,15 @@ spring:
   application:
     name: CUSTOMER-SERVICE
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: orhantrkmn15@gmail.com
+    password: jgpryglliozhdrzx
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
     username: root
@@ -25,8 +34,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
-
+          issuer-uri: http://localhost:9090/realms/e-commerce-spring
 
   #redis config
   data:
@@ -43,7 +51,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health  # Yani, /actuator/health endpoint'i HTTP isteklerine cevap verecektir.
+        include: prometheus  # Yani, /actuator/prometheus endpoint'i HTTP isteklerine cevap verecektir.
   #Bu ayar, uygulamanızın sağlık (health) endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir. Özellikle health altındaki show-details parametresi, bu endpoint'in ne kadar ayrıntılı bilgi sunacağını kontrol eder.
   endpoint:
     health:

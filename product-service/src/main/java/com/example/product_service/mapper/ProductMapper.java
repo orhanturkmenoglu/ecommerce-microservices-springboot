@@ -18,7 +18,6 @@ public class ProductMapper {
 
     public Product mapToProduct(ProductRequestDto productRequestDto) {
         return Product.builder()
-                .inventoryId(productRequestDto.getInventoryRequestDto().getId())
                 .name(productRequestDto.getName())
                 .description(productRequestDto.getDescription())
                 .category(productRequestDto.getCategory())

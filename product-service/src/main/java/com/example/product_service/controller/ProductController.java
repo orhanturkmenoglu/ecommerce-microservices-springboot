@@ -35,13 +35,7 @@ public class ProductController {
 
     @PostMapping
     @Operation(summary = "Create a new product", description = "Creates a new product with the provided details.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Product created successfully",
-                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
-    })
-
-    public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) {
+    public ResponseEntity<ProductResponseDto> createProduct(/*@Valid*/ @RequestBody ProductRequestDto productRequestDto) {
         log.info("Retry Count : {}", count);
         count++;
         if (productRequestDto == null) {

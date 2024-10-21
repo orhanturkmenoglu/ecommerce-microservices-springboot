@@ -55,13 +55,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
+          issuer-uri: http://localhost:9090/realms/e-commerce-spring
 
 logging:
   level:
     org.springframework.cloud.gateway : DEBUG #Gateway için log seviyesini belirler.
-
-
 
 
 #eureka:

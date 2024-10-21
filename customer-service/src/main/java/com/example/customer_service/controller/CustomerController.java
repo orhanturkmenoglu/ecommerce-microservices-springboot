@@ -29,10 +29,8 @@ public class CustomerController {
 
     @PostMapping
     @Operation(summary = "Create a new customer", description = "Creates a new customer with the provided details.")
-    @ApiResponse(responseCode = "201", description = "Customer created successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid input")
     public ResponseEntity<CustomerResponseDto> createCustomer(
-            @RequestBody @Schema(description = "Customer details for the new customer") CustomerRequestDto customerRequestDto) {
+            @RequestBody @Schema(description = "Customer details for the new customer") CustomerRequestDto customerRequestDto) throws Exception {
         CustomerResponseDto customer = customerService.createCustomer(customerRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(customer);
     }
@@ -40,7 +38,6 @@ public class CustomerController {
 
     @GetMapping("/all")
     @Operation(summary = "Get all customers", description = "Retrieves a list of all customers.")
-    @ApiResponse(responseCode = "200", description = "List of customers")
     public ResponseEntity<List<CustomerResponseDto>> getCustomersAll() {
         List<CustomerResponseDto> customersAll = customerService.getCustomersAll();
         return ResponseEntity.ok(customersAll);
@@ -48,8 +45,6 @@ public class CustomerController {
 
     @GetMapping("/{customerId}")
     @Operation(summary = "Get customer by ID", description = "Retrieves a customer by their unique ID.")
-    @ApiResponse(responseCode = "200", description = "Customer found")
-    @ApiResponse(responseCode = "404", description = "Customer not found")
     public ResponseEntity<CustomerResponseDto> getCustomerById(
             @PathVariable @Parameter(description = "Unique identifier of the customer") String customerId) {
         CustomerResponseDto customer = customerService.getCustomerById(customerId);
@@ -58,7 +53,6 @@ public class CustomerController {
 
     @GetMapping("/customerByFirstName")
     @Operation(summary = "Get customers by first name", description = "Retrieves a list of customers with the specified first name.")
-    @ApiResponse(responseCode = "200", description = "List of customers with the given first name")
     public ResponseEntity<List<CustomerResponseDto>> getCustomersByFirstName(
             @RequestParam @Parameter(description = "First name of the customers") String firstName) {
         List<CustomerResponseDto> customersByFirstName = customerService.getCustomersByFirstName(firstName);
@@ -67,8 +61,6 @@ public class CustomerController {
 
     @DeleteMapping("/{customerId}")
     @Operation(summary = "Delete customer by ID", description = "Deletes a customer by their unique ID.")
-    @ApiResponse(responseCode = "204", description = "Customer deleted successfully")
-    @ApiResponse(responseCode = "404", description = "Customer not found")
     public ResponseEntity<Void> deleteCustomerById(
             @PathVariable @Parameter(description = "Unique identifier of the customer to delete") String customerId) {
         try {
@@ -81,9 +73,6 @@ public class CustomerController {
 
     @PutMapping("/{customerId}")
     @Operation(summary = "Update customer details", description = "Updates the details of an existing customer.")
-    @ApiResponse(responseCode = "200", description = "Customer updated successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid input")
-    @ApiResponse(responseCode = "404", description = "Customer not found")
     public ResponseEntity<CustomerResponseDto> updateCustomer(
             @PathVariable @Parameter(description = "Unique identifier of the customer to update") String customerId,
             @RequestBody @Valid @Schema(description = "Updated customer details") CustomerUpdateRequestDto customerUpdateRequestDto) {
@@ -93,8 +82,6 @@ public class CustomerController {
 
     @GetMapping("/track-cargo/{trackingNumber}")
     @Operation(summary = "Get cargo by tracking number", description = "Retrieves cargo details using the tracking number.")
-    @ApiResponse(responseCode = "200", description = "Cargo details retrieved successfully")
-    @ApiResponse(responseCode = "404", description = "Cargo not found")
     public ResponseEntity<Cargo> getCargoByTrackingNumber(
             @PathVariable @Parameter(description = "Tracking number of the cargo") String trackingNumber) {
         Cargo cargo = cargoClientService.getCargoByTrackingNumber(trackingNumber);

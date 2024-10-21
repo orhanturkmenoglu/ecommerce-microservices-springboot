@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Oluşturuldu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc;
+        }
+        .container {
+            max-width: 600px;
+            margin: 15px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            font-size: 20px;
+            color: #333333;
+        }
+        .content p {
+            color: #555555;
+            line-height: 1.5;
+        }
+        .info-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .info-list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #333333;
+        }
+        .footer {
+            background-color: #f7f9fc;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            color: #999999;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Müşteri Başarıyla Oluşturuldu!</h1>
+    </div>
+    <div class="content">
+        <h2 th:text="'Sayın ' + ${customerName} + ','"></h2>
+        <p>Hesabınız başarıyla oluşturuldu. Aşağıdaki bilgileri gözden geçiriniz:</p>
+        <ul class="info-list">
+            <li><strong>Müşteri ID:</strong> <span th:text="${customerId}"></span></li>
+            <li><strong>Email:</strong> <span th:text="${customerEmail}"></span></li>
+        </ul>
+        <p>Bizimle olduğunuz için teşekkür ederiz!</p>
+        <p>Saygılarımızla,<br><span>TÜRKMENOĞLU INOVATION </span></p>
+    </div>
+    <div class="footer">
+        <p>Bu e-posta sistem tarafından otomatik olarak gönderilmiştir, lütfen yanıt vermeyin.</p>
+    </div>
+</div>
+</body>
+</html>

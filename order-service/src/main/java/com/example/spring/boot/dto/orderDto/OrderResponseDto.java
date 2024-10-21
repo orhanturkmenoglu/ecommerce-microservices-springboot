@@ -22,6 +22,9 @@ public class OrderResponseDto implements Serializable {
     private String id;
 
     @Schema(description = "Unique identifier for the product associated with the order", example = "product456")
+    private String customerId;
+
+    @Schema(description = "Unique identifier for the product associated with the order", example = "product456")
     private String productId;
 
     @Schema(description = "Unique identifier for the inventory associated with the order", example = "inventory789")

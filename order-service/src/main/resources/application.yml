@@ -5,6 +5,14 @@ server:
 spring:
   application:
     name: ORDER-SERVICE
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: orhantrkmn15@gmail.com
+    password: jgpryglliozhdrzx
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
@@ -29,12 +37,11 @@ spring:
 
   config:
     import: optional:configserver:http://localhost:8084
-
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
+          issuer-uri: http://localhost:9090/realms/e-commerce-spring
 
 
 management:

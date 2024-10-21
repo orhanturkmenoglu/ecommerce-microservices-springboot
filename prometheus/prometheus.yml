@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s  # Metriklerin her 15 saniyede bir toplanmasını tanımlar
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: 'API-GATEWAY'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['http://localhost:8083']
+
+  - job_name: 'SERVICE-REGISTRY'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['http://localhost:8761']
+
+  - job_name: 'CUSTOMER-SERVICE'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['http://localhost:8086']

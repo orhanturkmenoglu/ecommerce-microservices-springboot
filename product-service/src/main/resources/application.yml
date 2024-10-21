@@ -25,6 +25,11 @@ spring:
       port: 6379
   cache:
     type: redis
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/e-commerce-spring
 
 # swagger-ui configç
 springdoc:
@@ -35,11 +40,6 @@ springdoc:
   config:
     import: optional:configserver:http://localhost:8084
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
 
 
 management:

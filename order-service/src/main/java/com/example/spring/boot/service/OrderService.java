@@ -1,7 +1,6 @@
 package com.example.spring.boot.service;
 
 import com.example.spring.boot.dto.cargoDto.CargoRequestDto;
-import com.example.spring.boot.dto.cargoDto.CargoUpdateRequestDto;
 import com.example.spring.boot.dto.inventoryDto.InventoryUpdateRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderRequestDto;
 import com.example.spring.boot.dto.orderDto.OrderResponseDto;
@@ -47,6 +46,8 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
 
+    private final MailService mailService;
+
     @Cacheable(value = "orders", key = "'all'")
     public List<OrderResponseDto> getAllOrders() {
         log.info("OrderService::getAllOrders started");
@@ -74,7 +75,7 @@ public class OrderService {
     @Retry(name = "orderService", fallbackMethod = "fallbackCreateOrder")
     @CircuitBreaker(name = "orderServiceBreaker", fallbackMethod = "fallbackCreateOrder")
     @RateLimiter(name = "createOrderLimiter", fallbackMethod = "fallbackCreateOrder")
-    public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) {
+    public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) throws Exception {
         log.info("Order::createOrder started");
 
         // Feign Client ile senkron olarak Product ve Inventory servislerine çağrı yapıyoruz
@@ -108,6 +109,12 @@ public class OrderService {
         CargoRequestDto cargo = getCargo(savedOrder.getId(), customer.getId());
 
         cargoClientService.createCargo(cargo);
+
+
+        // sipariş ve kargo kaydı oluştuğuna dair kullanıcıya email gönderilecek.
+        // Sipariş oluşturulduğunda e-posta gönderimi
+        mailService.sendHtmlEmail(customer.getEmail(), "Sipariş Oluşturuldu", savedOrder);
+
 
         log.info("Order::createOrder finished.");
         return savedOrder;

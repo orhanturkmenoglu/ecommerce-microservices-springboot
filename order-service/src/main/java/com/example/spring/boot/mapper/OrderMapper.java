@@ -15,6 +15,7 @@ public class OrderMapper {
 
     public Order mapToOrder(OrderRequestDto orderRequestDto) {
         return Order.builder()
+                .customerId(orderRequestDto.getCustomerId())
                 .productId(orderRequestDto.getProductId())
                 .inventoryId(orderRequestDto.getInventoryId())
                 .quantity(orderRequestDto.getQuantity())
@@ -26,6 +27,7 @@ public class OrderMapper {
     public Order mapToOrder(OrderResponseDto orderResponseDto) {
         return Order.builder()
                 .id(orderResponseDto.getId())
+                .customerId(orderResponseDto.getCustomerId())
                 .productId(orderResponseDto.getProductId())
                 .inventoryId(orderResponseDto.getInventoryId())
                 .orderStatus(OrderStatus.PENDING)
@@ -39,6 +41,7 @@ public class OrderMapper {
     public OrderResponseDto mapToOrderResponseDto(Order order) {
         return OrderResponseDto.builder()
                 .id(order.getId())
+                .customerId(order.getCustomerId())
                 .productId(order.getProductId())
                 .inventoryId(order.getInventoryId())
                 .orderStatus(OrderStatus.PROCESSING)

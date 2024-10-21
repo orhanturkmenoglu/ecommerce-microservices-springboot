@@ -3,6 +3,8 @@ package com.example.product_service.dto.productDto;
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.enums.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +35,7 @@ public class ProductRequestDto implements Serializable {
 
     @NotEmpty(message = "Product category cannot be empty ")
     @Schema(description = "Category of the product", example = "ELEKTRONİK")
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @NotNull(message = "Product price cannot be null")
