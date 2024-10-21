@@ -17,9 +17,12 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * Redis: Hızlı veri erişimi ve önbellekleme için.
 * Swagger UI: API belgeleri için kullanıcı dostu arayüz.
 * Docker ve Docker Compose: Sistem bileşenlerinin sorunsuz çalışmasını sağlamak için kapsayıcı yönetimi ve konfigürasyonu.
-* Okta (Yakında): Kimlik doğrulama ve yetkilendirme için güvenli ve kullanıcı dostu bir çözüm.
+  
+🔑 Yeni Gelen Özellikler:
 
-📌  Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerçekleştikten sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir. Yeni Özellikler: Kargo servisi eklendi; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır. Ayrıca, Redis entegrasyonu ile hızlı veri erişimi sağlandı, Swagger UI entegrasyonu ile API belgeleri kolayca erişilebilir hale getirildi ve Docker ile Docker Compose desteği ile sistemin çeşitli ortamlarda tutarlı çalışması sağlandı.
+Keycloak: API Gateway üzerinden kimlik doğrulama ve yetkilendirme yapılarak sistemlere güvenli erişim sağlanması.
+
+📌  Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Bu süreç, API Gateway üzerinden Keycloak kullanılarak yapılan kimlik doğrulama ve yetkilendirme ile güvenli bir şekilde yönetilmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi gerçekleştikten sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir.
 
 📂 Proje Yapısı:
 
@@ -108,6 +111,7 @@ Cargo Service:
 
 📈 Gelecekteki Geliştirmeler:
 
-* Okta entegrasyonu ile kimlik doğrulama ve yetkilendirme.
+* GraphQL Desteği: API'yi daha esnek hale getirmek için GraphQL entegrasyonu.
+* Test Otomasyonu ve CI/CD Entegrasyonu: Sürekli entegrasyon ve dağıtım (CI/CD) süreçlerini otomatize etmek.
 * Bildirim servisi eklenmesi.
 
