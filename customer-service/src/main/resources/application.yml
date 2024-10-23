@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: CUSTOMER-SERVICE
+  profiles:
+    active: dev
 
   mail:
     host: smtp.gmail.com
@@ -43,6 +45,7 @@ spring:
       port: 6379
   cache:
     type: redis
+
 management:
   health:
     circuitbreakers: #Bu ayar, uygulamanızın sağlık durumu (health) izleme ve raporlama özelliğini konfigüre eder.

@@ -6,10 +6,6 @@ spring:
   application:
     name: PRODUCT-SERVICE
 
-  profiles:
-    active: prod
-
-
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
     username: root
@@ -34,8 +30,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:9090/realms/e-commerce-spring
-
-
 
 # swagger-ui configç
 springdoc:

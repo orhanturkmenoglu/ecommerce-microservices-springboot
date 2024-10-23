@@ -77,7 +77,7 @@ public class ProductService {
         Inventory mapToInventory = productMapper.mapToInventory(inventoryResponseDto);
         log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory.toString());
         saveProduct.setInventory(mapToInventory);
-        saveProduct.setInventoryId(inventoryResponseDto.getId());
+        saveProduct.setInventoryId(mapToInventory.getId());
 
 
         log.info("ProductService::createProduct - Updating inventory with inventory: {}", mapToInventory);

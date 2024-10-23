@@ -26,10 +26,6 @@ public class InventoryController {
 
     @PostMapping("/create")
     @Operation(summary = "Add new inventory", description = "Creates a new inventory entry.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Inventory successfully created"),
-            @ApiResponse(responseCode = "400", description = "Invalid input provided")
-    })
     public ResponseEntity<InventoryResponseDto> addInventory(
             @Parameter(description = "Inventory request details", required = true)
             @Valid @RequestBody InventoryRequestDto inventoryRequestDto) {

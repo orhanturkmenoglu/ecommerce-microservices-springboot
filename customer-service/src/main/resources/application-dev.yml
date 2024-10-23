@@ -1,14 +1,19 @@
 server:
-  port: 8080
+  port: 8086
 
 
 spring:
   application:
-    name: PRODUCT-SERVICE
+    name: CUSTOMER-SERVICE
 
-  profiles:
-    active: prod
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: orhantrkmn15@gmail.com
+    password: jgpryglliozhdrzx
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
@@ -21,6 +26,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  config:
+    import: optional:configserver:http://localhost:8084
+
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/e-commerce-spring
 
   #redis config
   data:
@@ -29,25 +43,6 @@ spring:
       port: 6379
   cache:
     type: redis
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9090/realms/e-commerce-spring
-
-
-
-# swagger-ui configç
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html  #default path.
-
-
-  config:
-    import: optional:configserver:http://localhost:8084
-
-
-
 management:
   health:
     circuitbreakers: #Bu ayar, uygulamanızın sağlık durumu (health) izleme ve raporlama özelliğini konfigüre eder.
@@ -56,21 +51,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health  # Yani, /actuator/health endpoint'i HTTP isteklerine cevap verecektir.
+        include: prometheus  # Yani, /actuator/prometheus endpoint'i HTTP isteklerine cevap verecektir.
   #Bu ayar, uygulamanızın sağlık (health) endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir. Özellikle health altındaki show-details parametresi, bu endpoint'in ne kadar ayrıntılı bilgi sunacağını kontrol eder.
   endpoint:
     health:
       show-details: always # : Sağlık endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir.
   tracing: #zipkin config
     sampling:
-      probability: 1.0  #her isteği takip edecek
-
-
-
+      probability: 1.0  #her isteği takip edeceç
 resilience4j:
   circuitbreaker:
     instances:
-      inventoryServiceBreaker: #inventoryServiceBreaker adlı bir Circuit Breaker örneği için spesifik konfigürasyonları tanımlar.
+      customerServiceBreaker: #customerServiceBreaker adlı bir Circuit Breaker örneği için spesifik konfigürasyonları tanımlar.
         registerHealthIndicator: true  # Circuit Breaker'ın sağlık durumu bilgisinin Actuator'a kayıt edilmesini sağlar.
         eventConsumerBufferSize: 10   # 10 değeri, olay tüketicisi için tampon boyutunu belirtir. Bu, Circuit Breaker olaylarının kaç tanesinin tamponda tutulacağını belirler.
         failureRateThreshold: 50      # Hata oranı eşiğini belirler.Circuit Breaker'ın devreye girmesi için gereken hata oranı eşiğidir (%50).
@@ -84,27 +76,25 @@ resilience4j:
 
   retry: #  retry (yeniden deneme) mekanizması
     instances:
-      inventoryServiceBreaker:
+      customerServiceBreaker:
         max-attempts: 3     # kaç kez yeniden deneneceğini belirtir.
         wait-duration: 5s   # iki deneme arasındaki bekleme süresini belirtir.
 
 
   ratelimiter: #  rate limiter (oran sınırlayıcı) kullanarak belirli bir süre içinde belirli sayıda istek kabul edebilirsiniz
     instances:
-      createProductLimiter:
+      createCustomerLimiter:
         limit-refresh-period: 4s    # limitin ne sıklıkla yenileneceğini belirtir.
         limit-for-period: 2         #her dönem için izin verilen maksimum çağrı sayısını belirtir.
-        timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir
-
+        timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir.
 
 
   #eureka:
-#  instance:
-#    prefer-ip-address: true
-
-#  client:
-#    register-with-eureka: true
-#    fetch-registry: true
-#    service-url:
-#      defaultZone : http://localhost:8761/eureka
-
+  #  instance:
+  #    prefer-ip-address: true
+  #
+  #  client:
+  #    register-with-eureka: true
+  #    fetch-registry: true
+  #    service-url:
+  #      defaultZone : http://localhost:8761/eureka

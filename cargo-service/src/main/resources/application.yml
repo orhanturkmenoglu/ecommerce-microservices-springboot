@@ -6,6 +6,10 @@ spring:
   application:
     name: CARGO-SERVICE
 
+  profiles:
+    active: prod
+
+
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
     username: root
@@ -35,6 +39,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:9000/realms/spring-microservice
+
 
 
 management:
