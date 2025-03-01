@@ -25,6 +25,7 @@ public class Address implements Serializable {
     private String id;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Country country = Country.TURKEY;
     private String city;
     private String district;

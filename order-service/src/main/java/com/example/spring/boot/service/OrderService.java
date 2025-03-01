@@ -113,7 +113,7 @@ public class OrderService {
 
         // sipariş ve kargo kaydı oluştuğuna dair kullanıcıya email gönderilecek.
         // Sipariş oluşturulduğunda e-posta gönderimi
-        mailService.sendHtmlEmail(customer.getEmail(), "Sipariş Oluşturuldu", savedOrder);
+        // mailService.sendHtmlEmail(customer.getEmail(), "Sipariş Oluşturuldu", savedOrder);
 
 
         log.info("Order::createOrder finished.");

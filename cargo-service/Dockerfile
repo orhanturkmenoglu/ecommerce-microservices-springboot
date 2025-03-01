@@ -8,10 +8,10 @@ WORKDIR /app
 ARG JAR_FILE=target/*.jar
 
 # 4. JAR dosyasını Docker imajına kopyalıyoruz ve isimlendiriyoruz
-COPY ${JAR_FILE} api-gateway-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} cargo-service-0.0.1-SNAPSHOT.jar
 
 # 5. Uygulamanın çalıştırılması için gerekli komutu belirtir
-ENTRYPOINT ["java", "-jar", "api-gateway-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "cargo-service-0.0.1-SNAPSHOT.jar"]
 
 # 6. Bağlantı noktasını açığa çıkarma (Eğer varsayılan olarak 8080'de çalışıyorsa)
-EXPOSE 8083
+EXPOSE 8082

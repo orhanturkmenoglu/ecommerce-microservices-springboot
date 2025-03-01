@@ -50,7 +50,7 @@ public class MailService {
             context.setVariable("orderStatus", orderResponseDto.getOrderStatus());
             context.setVariable("shippingAddress", orderResponseDto.getShippingAddress());
 
-            String htmlContent = templateEngine.process("create-customer", context);
+            String htmlContent = templateEngine.process("create-order", context);
 
             helper.setTo(to);
             helper.setSubject(subject);

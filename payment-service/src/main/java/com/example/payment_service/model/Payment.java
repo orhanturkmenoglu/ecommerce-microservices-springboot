@@ -39,7 +39,12 @@ public class Payment implements Serializable {
 
     private PaymentType paymentType;  // ödeme tipi
 
+    private String stripePaymentStatus;
+
     private LocalDateTime paymentDate;
+
+    private String checkOutUrl;
+
 
     @PostConstruct
     private void init() {
@@ -47,4 +52,5 @@ public class Payment implements Serializable {
             this.id = UUID.randomUUID().toString();
         }
     }
+
 }

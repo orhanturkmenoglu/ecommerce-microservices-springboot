@@ -22,13 +22,20 @@ import com.example.payment_service.model.Payment;
 import com.example.payment_service.publisher.PaymentMessageSender;
 import com.example.payment_service.repository.PaymentRepository;
 import com.example.payment_service.util.PaymentMessage;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,49 +62,150 @@ public class PaymentService {
 
     private final PaymentMessageSender paymentMessageSender;
 
+    @Value("${stripe.secret-key}")
+    private String stripeSecretKey;
+
+
+    public String[] createCheckoutSession(Long amount, String currency, Long quantity, String productName) throws StripeException {
+        Stripe.apiKey = stripeSecretKey;
+
+        // Checkout session oluştur
+        SessionCreateParams params = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl("http://localhost:8085/success")
+                .setCancelUrl("http://localhost:8085/cancel")
+                .addLineItem(
+                        SessionCreateParams.LineItem.builder()
+                                .setQuantity(quantity)
+                                .setPriceData(
+                                        SessionCreateParams.LineItem.PriceData.builder()
+                                                .setCurrency(currency)
+                                                .setUnitAmount(amount)
+                                                .setProductData(
+                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                .setName(productName)
+                                                                .build()
+                                                )
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+
+        // Session oluştur
+        Session session = Session.create(params);
+
+        // Checkout URL'yi döndür
+        String checkoutUrl = session.getUrl();
+        // paymentIntentId'yi almak yerine, payment_status'ü almak
+        String paymentStatus = session.getPaymentStatus();  // paymentStatus alındı
+        log.info("Checkout URL: {}", checkoutUrl);
+        log.info("Payment Status: {}", paymentStatus);
+
+        // paymentStatus'ü döndürmek
+        return new String[]{checkoutUrl, paymentStatus};
+    }
+
     @Transactional
     @CircuitBreaker(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @Retry(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @RateLimiter(name = "processPaymentLimiter", fallbackMethod = "paymentServiceFallback")
-    public PaymentResponseDto processPayment(PaymentRequestDto paymentRequestDto) {
-        log.info("PaymentService::processPayment started");
+    public PaymentResponseDto processPayment(PaymentRequestDto paymentRequestDto) throws StripeException {
+        log.info("PaymentService::processPayment started for Order ID: {}", paymentRequestDto.getOrderId());
 
-        // sipariş kontrolü gerçekleştir..
+        // Sipariş kontrolü
         OrderResponseDto order = orderServiceClient.getOrderById(paymentRequestDto.getOrderId());
+        if (order == null || order.getId() == null) {
+            throw new IllegalArgumentException("Order not found for ID: " + paymentRequestDto.getOrderId());
+        }
+
+        // Stok kontrolü
         Inventory inventory = inventoryServiceClient.getInventoryById(order.getInventoryId());
+        if (inventory == null || inventory.getId() == null) {
+            throw new IllegalArgumentException("Inventory not found for ID: " + order.getInventoryId());
+        }
+
+        // Müşteri kontrolü
         Customer customer = customerClientService.getCustomerById(paymentRequestDto.getCustomerId());
+        if (customer == null || customer.getId() == null) {
+            throw new IllegalArgumentException("Customer not found for ID: " + paymentRequestDto.getCustomerId());
+        }
 
-        log.info("PaymentResponseDto::processPayment - customer with id : {},  Order with id : {}," +
-                " inventory with id : {}", customer.getId(), order.getId(), inventory.getId());
+        log.info("Processing payment for Order ID: {}, Customer ID: {}, Inventory ID: {}", order.getId(), customer.getId(), inventory.getId());
 
+        // Stripe Checkout Session oluştur ve kontrol et
+        String[] sessionDetails = createCheckoutSession((long) order.getTotalAmount() * 100L, "usd", (long) order.getQuantity(), "Test Product");
+        String checkoutUrl = sessionDetails[0];
+        String paymentStatus = sessionDetails[1];  // paymentStatus alındı
 
-        // ödeme oluştur..
+        if (checkoutUrl == null || checkoutUrl.isEmpty()) {
+            throw new IllegalStateException("Failed to create Stripe Checkout Session");
+        }
+        log.info("Stripe Checkout Session created: {}", checkoutUrl);
+
+        // Ödeme nesnesini oluştur ve kaydet
         Payment payment = paymentMapper.mapToPayment(paymentRequestDto);
         payment.setQuantity(order.getQuantity());
         payment.setAmount(order.getTotalAmount());
-        log.info("PaymentResponseDto::processPayment - payment: {}", payment);
-
-
-        // ödemeyi kaydet.
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setCheckOutUrl(checkoutUrl);
+        payment.setStripePaymentStatus(paymentStatus);  // paymentStatus kaydedildi
         Payment savedPayment = paymentRepository.save(payment);
-        log.info("PaymentResponseDto::processPayment - saved payment: {}", savedPayment);
+        log.info("Payment saved with ID: {}", savedPayment.getId());
 
+        // Stripe ödeme durumu kontrolü
+        switch (paymentStatus) {
+            case "paid":
+                savedPayment.setPaymentStatus(PaymentStatus.COMPLETED);
+                log.info("Payment successful, updating status to COMPLETED");
 
-        // ödeme başarılı ise kontrol et. stok rabbitmq yardımı ile güncellenecek...
-        updatedInventory(order, inventory);
+                // Stok güncellemesi
+                updatedInventory(order, inventory);
+                log.info("Inventory updated for Inventory ID: {}", inventory.getId());
 
-        // ödeme başarılı ise cargo statüsünü güncelle.
-        if (savedPayment.getPaymentStatus().name().equals(PaymentStatus.COMPLETED.name())) {
-           updateCargoStatus(savedPayment);
+                // Cargo statüsünü güncelle
+                updateCargoStatus(savedPayment);
+                log.info("Cargo status updated for Payment ID: {}", savedPayment.getId());
+                break;
+
+            case "unpaid":
+                savedPayment.setPaymentStatus(PaymentStatus.FAILED);
+                log.warn("Payment failed, updating status to FAILED");
+                break;
+
+            case "no_payment_required":
+                savedPayment.setPaymentStatus(PaymentStatus.NO_PAYMENT_REQUIRED);
+                log.info("No payment required, updating status to NO_PAYMENT_REQUIRED");
+                break;
+
+            default:
+                savedPayment.setPaymentStatus(PaymentStatus.FAILED);
+                log.warn("Unknown payment status, updating status to FAILED");
+                break;
         }
 
+        // Güncellenmiş ödeme bilgisini kaydet
+        savedPayment = paymentRepository.save(savedPayment);
 
+        // PaymentResponseDto oluştur
         PaymentResponseDto paymentResponseDto = paymentMapper.mapToPaymentResponseDto(savedPayment);
         paymentResponseDto.setCustomer(customer);
-        log.info("PaymentResponseDto::processPayment - paymentResponseDto : {}", paymentResponseDto);
+        paymentResponseDto.setCheckoutUrl(checkoutUrl);
+        paymentResponseDto.setStripePaymentStatus(paymentStatus);
+        log.info("Payment process completed with status: {}", savedPayment.getPaymentStatus());
 
         return paymentResponseDto;
     }
+
+
+    public PaymentResponseDto paymentServiceFallback(PaymentRequestDto paymentRequestDto, Throwable t) {
+        log.error("Payment processing failed: {}", t.getMessage());
+        return PaymentResponseDto.builder()
+                .paymentStatus(PaymentStatus.FAILED)
+                .quantity(0).build();
+    }
+
 
     @Cacheable(value = "payments", key = "#paymentId")
     public PaymentResponseDto getPaymentById(String paymentId) {
@@ -175,7 +283,7 @@ public class PaymentService {
     @CircuitBreaker(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @Retry(name = "paymentServiceBreaker", fallbackMethod = "paymentServiceFallback")
     @RateLimiter(name = "processPaymentLimiter", fallbackMethod = "paymentServiceFallback")
-    @CacheEvict(value = "payments", key = "#paymentUpdateRequestDto.customerId",allEntries = true)
+    @CacheEvict(value = "payments", key = "#paymentUpdateRequestDto.customerId", allEntries = true)
     public PaymentResponseDto updatePayment(PaymentUpdateRequestDto paymentUpdateRequestDto) {
         log.info("PaymentService::updatePayment started");
 
@@ -221,7 +329,7 @@ public class PaymentService {
         log.info("PaymentService::cancelPaymentById - Payment cancelled successfully. Payment ID: {}", paymentId);
     }
 
-    @CacheEvict(value = "payments", key = "#paymentId",allEntries = true)
+    @CacheEvict(value = "payments", key = "#paymentId", allEntries = true)
     public void deleteByPaymentId(String paymentId) {
         log.info("PaymentService::deleteByPaymentId started");
 

@@ -17,9 +17,11 @@ public class PaymentMapper {
                 .customerId(paymentRequestDto.getCustomerId())
                 .orderId(paymentRequestDto.getOrderId())
                 .cargoId(paymentRequestDto.getCargoId())
-                .paymentStatus(PaymentStatus.COMPLETED)
+                .paymentStatus(PaymentStatus.PENDING) // Başlangıçta ödeme durumu PENDING
                 .paymentType(paymentRequestDto.getPaymentType())
                 .paymentDate(LocalDateTime.now())
+                .amount(0.0) // Burada amount değerini atıyoruz
+                .quantity(0) // Burada quantity değerini atıyoruz
                 .build();
     }
 
@@ -33,7 +35,7 @@ public class PaymentMapper {
                 .quantity(payment.getQuantity())
                 .amount(payment.getAmount())
                 .paymentType(payment.getPaymentType())
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(payment.getPaymentDate())
                 .build();
     }
 

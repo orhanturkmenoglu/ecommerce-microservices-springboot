@@ -50,4 +50,11 @@ public class PaymentResponseDto implements Serializable {
     @Embedded
     @Schema(description = "Details of the customer who made the payment")
     private Customer customer ;
+
+    @Schema(description = "URL for the checkout session", example = "https://example.com/checkout")
+    private String checkoutUrl;
+
+    @Schema(description = "Stripe payment status", example = "paid")
+    private String stripePaymentStatus;
+
 }

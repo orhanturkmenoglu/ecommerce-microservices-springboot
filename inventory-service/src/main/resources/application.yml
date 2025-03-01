@@ -29,12 +29,6 @@ spring:
 
   config:
     import: optional:configserver:http://localhost:8084
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9090/realms/e-commerce-spring
-
 
 management:
   #Bu ayar, Actuator tarafından sunulan HTTP endpoint'lerini (veya yönlendiricilerini) hangi durumda açacağını belirtir. Özellikle web altındaki exposure bölümü, bu endpoint'lerin hangi koşullarda dış dünyaya (HTTP istemcilerine) açılacağını tanımlar.

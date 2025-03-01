@@ -5,6 +5,7 @@ import com.example.payment_service.dto.paymentDto.PaymentResponseDto;
 import com.example.payment_service.dto.paymentDto.PaymentUpdateRequestDto;
 import com.example.payment_service.exception.PaymentNotFoundException;
 import com.example.payment_service.service.PaymentService;
+import com.stripe.exception.StripeException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,6 +27,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+
     @PostMapping
     @Operation(summary = "Process a payment", description = "Processes a payment and returns the payment response")
     @ApiResponses(value = {
@@ -34,7 +36,7 @@ public class PaymentController {
     })
     public ResponseEntity<PaymentResponseDto> processPayment(
             @Parameter(description = "Payment request DTO containing payment details", required = true)
-            @Valid @RequestBody PaymentRequestDto paymentRequestDto) {
+            @Valid @RequestBody PaymentRequestDto paymentRequestDto) throws StripeException {
         PaymentResponseDto paymentResponseDto = paymentService.processPayment(paymentRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponseDto);
     }

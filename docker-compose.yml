@@ -4,6 +4,7 @@ services:
   # API Gateway
   api-gateway:
     image: api-gateway
+    restart: on-failure
     ports:
       - "8083:8083"
     depends_on:
@@ -15,6 +16,7 @@ services:
   # Config Server
   config-server:
     image: config-server
+    restart: on-failure
     ports:
       - "8084:8084"
     networks:
@@ -23,6 +25,7 @@ services:
   # Service Registry (Eureka)
   eureka-server:
     image: service-registry
+    restart: on-failure
     ports:
       - "8761:8761"
     networks:

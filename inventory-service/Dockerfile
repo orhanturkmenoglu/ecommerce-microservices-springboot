@@ -8,10 +8,10 @@ WORKDIR /app
 ARG JAR_FILE=target/*.jar
 
 # 4. JAR dosyasını Docker imajına kopyalıyoruz ve isimlendiriyoruz
-COPY ${JAR_FILE} inventoryservice.jar
+COPY ${JAR_FILE} inventory-service-0.0.1-SNAPSHOT.jar
 
 # 5. Uygulamanın çalıştırılması için gerekli komutu belirtir
-ENTRYPOINT ["java", "-jar", "inventoryservice.jar"]
+ENTRYPOINT ["java", "-jar", "inventory-service-0.0.1-SNAPSHOT.jar"]
 
 # 6. Bağlantı noktasını açığa çıkarma (Eğer varsayılan olarak 8080'de çalışıyorsa)
 EXPOSE 8082

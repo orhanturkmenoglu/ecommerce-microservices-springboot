@@ -11,10 +11,10 @@ ARG JAR_FILE=target/*.jar
 
 # JAR dosyasını Docker imajına kopyalıyoruz ve isimlendiriyoruz
 
-COPY ${JAR_FILE} serviceregistry.jar
+COPY ${JAR_FILE} service-registry-0.0.1-SNAPSHOT.jar
 
 #Uygulamanın çalıştırılması için gerekli komutu belirtir.
-ENTRYPOINT ["java","-jar","serviceregistry.jar"]
+ENTRYPOINT ["java","-jar","service-registry-0.0.1-SNAPSHOT.jar"]
 
 #BAĞLANTI NOKTASINI AÇIĞA ÇIKARMA
 EXPOSE 8761

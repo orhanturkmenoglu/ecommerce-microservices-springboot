@@ -32,12 +32,6 @@ spring:
     import: optional:configserver:http://localhost:8084
 
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9090/realms/e-commerce-spring
-
   #redis config
   data:
     redis:

@@ -6,14 +6,14 @@ FROM openjdk:17-jdk
 #düzen sağlar.
 WORKDIR /app
 
-# 3. Derleme zamanı değişken tanımlama
-ARG JAR_FILE=target/*.jar
+VOLUME /temp
+
 
 # 4. JAR dosyasını Docker imajına kopyalıyoruz ve isimlendiriyoruz
-COPY ${JAR_FILE} productservice.jar
+COPY ./target/product-service-0.0.1-SNAPSHOT.jar   ./product-service-0.0.1-SNAPSHOT.jar
 
 # 5. Uygulamanın çalıştırılması için gerekli komutu belirtir
-ENTRYPOINT ["java", "-jar", "productservice.jar"]
+ENTRYPOINT ["java", "-jar", "product-service-0.0.1-SNAPSHOT.jar"]
 
 
 # 6. Bağlantı noktasını açığa çıkarma (Eğer varsayılan olarak 8080'de çalışıyorsa)

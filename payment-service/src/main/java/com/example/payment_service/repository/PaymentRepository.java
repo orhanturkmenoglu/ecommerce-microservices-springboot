@@ -1,5 +1,6 @@
 package com.example.payment_service.repository;
 
+import com.example.payment_service.enums.PaymentStatus;
 import com.example.payment_service.enums.PaymentType;
 import com.example.payment_service.model.Payment;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -20,5 +21,5 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
 
     List<Payment> findByPaymentDateBetween(LocalDateTime startDate,LocalDateTime endDate);
 
-
+    List<Payment> findByPaymentStatus(PaymentStatus paymentStatus);
 }

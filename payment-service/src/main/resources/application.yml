@@ -45,12 +45,6 @@ rabbit:
   config:
     import: optional:configserver:http://localhost:8084
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9000/realms/spring-microservice
-
 
 management:
   health:
@@ -112,3 +106,6 @@ resilience4j:
 #    service-url:
 #      defaultZone : http://localhost:8761/eureka
 
+stripe:
+  secret-key: "sk_test_51QxAPmKieq4XdVhZL0m4d6igCJXwG7Y0FBx1GGGVcLSy8Zabv1pAjb4SiWuor25LOFum96diIn8JFWGrASeeGuRq00IotgeVMJ"
+  publishable-key: "pk_test_51QxAPmKieq4XdVhZXDRPec13cCSAQFCD6ojF4fLjv8auPjAaRcUNMGHmUTC4SoMqRin7vorA4wLS0dyxuHWQSTPh00SUVQhG6x"

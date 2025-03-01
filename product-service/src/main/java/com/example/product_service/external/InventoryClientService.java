@@ -1,7 +1,6 @@
 package com.example.product_service.external;
 
 
-import com.example.product_service.config.FeignClientConfig;
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.dto.inventoryDto.InventoryResponseDto;
 import com.example.product_service.dto.inventoryDto.InventoryUpdateRequestDto;
@@ -9,7 +8,7 @@ import com.example.product_service.model.Inventory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "INVENTORY-SERVICE",configuration = FeignClientConfig.class)
+@FeignClient(name = "INVENTORY-SERVICE")
 public interface InventoryClientService {
 
 

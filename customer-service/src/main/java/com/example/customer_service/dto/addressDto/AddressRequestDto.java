@@ -23,6 +23,7 @@ public class AddressRequestDto implements Serializable {
 
 
     @Schema(description = "The country of the address", example = "TURKEY")
+    @Builder.Default
     private Country country = Country.TURKEY;
 
     @Schema(description = "The city of the address", example = "Istanbul")
