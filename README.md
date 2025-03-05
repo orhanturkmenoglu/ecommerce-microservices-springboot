@@ -25,6 +25,8 @@ Stripe API: Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bi
 
 📌 Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Bu süreç, API Gateway üzerinden Keycloak kullanılarak yapılan kimlik doğrulama ve yetkilendirme ile güvenli bir şekilde yönetilmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi için Stripe API kullanılarak ödeme güvenli bir şekilde alınmaktadır. Ödeme işlemi tamamlandıktan sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir.
 
+✨ Ayrıca, her gece saat 24:00'te otomatik olarak sepet temizleme işlemi yapılmaktadır. Bu özellik, tamamlanmamış ve 24 saatten eski siparişleri sistemden siler, böylece veritabanı ve sistem verimliliği korunmuş olur.
+
 📂 Proje Yapısı:
 
 * config-server: Merkezi yapılandırma sunucusu.
