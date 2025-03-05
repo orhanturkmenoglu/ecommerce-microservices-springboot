@@ -1,5 +1,6 @@
 package com.example.spring.boot.repository;
 
+import com.example.spring.boot.enums.OrderStatus;
 import com.example.spring.boot.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     Optional<Order> findByInventoryId(String inventoryId);
 
     List<Order> findByOrderDateBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    List<Order> findByOrderStatusAndOrderDateBefore(OrderStatus orderStatus,LocalDateTime dateTime);
+
 }

@@ -10,21 +10,14 @@ import com.example.payment_service.enums.PaymentType;
 import com.example.payment_service.exception.InsufficientStockException;
 import com.example.payment_service.exception.PaymentCustomerNotFoundException;
 import com.example.payment_service.exception.PaymentNotFoundException;
-import com.example.payment_service.external.CargoClientService;
-import com.example.payment_service.external.CustomerClientService;
-import com.example.payment_service.external.InventoryServiceClient;
-import com.example.payment_service.external.OrderServiceClient;
+import com.example.payment_service.external.*;
 import com.example.payment_service.mapper.PaymentMapper;
-import com.example.payment_service.model.Cargo;
-import com.example.payment_service.model.Customer;
-import com.example.payment_service.model.Inventory;
-import com.example.payment_service.model.Payment;
+import com.example.payment_service.model.*;
 import com.example.payment_service.publisher.PaymentMessageSender;
 import com.example.payment_service.repository.PaymentRepository;
 import com.example.payment_service.util.PaymentMessage;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -35,13 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +54,8 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
 
     private final PaymentMessageSender paymentMessageSender;
+
+    private final InvoiceClientService invoiceClientService;
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -167,7 +162,20 @@ public class PaymentService {
                 // Cargo statüsünü güncelle
                 updateCargoStatus(savedPayment);
                 log.info("Cargo status updated for Payment ID: {}", savedPayment.getId());
+
+
+                // Fatura oluştur ve kaydet
+                Map<String, Object> invoiceData = Map.of(
+                        "orderId", order.getId(),
+                        "customerId", customer.getId(),
+                        "totalAmount", order.getTotalAmount(),
+                        "quantity", order.getQuantity(),
+                        "productName", "Test Product"
+                );
+                Invoice invoice =  invoiceClientService.createInvoice(invoiceData);
+                log.info("Invoice created with ID: {}", invoice.getInvoiceNumber());
                 break;
+
 
             case "unpaid":
                 savedPayment.setPaymentStatus(PaymentStatus.FAILED);
