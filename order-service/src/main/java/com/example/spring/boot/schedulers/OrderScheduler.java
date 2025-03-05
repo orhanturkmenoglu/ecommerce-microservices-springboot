@@ -22,7 +22,7 @@ public class OrderScheduler {
     public void deleteUnfinishedOrders() {
         log.info("OrderScheduler::deleteUnfinishedOrders started.");
 
-        LocalDateTime oneDayAgo = LocalDateTime.now().minusHours(24);
+        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(24);
 
         List<Order> oldOrders = orderRepository.findByOrderStatusAndOrderDateBefore(OrderStatus.PROCESSING, oneDayAgo);
         log.info("OrderScheduler::deleteUnfinishedOrders - oldOrders: {}", oldOrders);
