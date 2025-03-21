@@ -6,8 +6,7 @@ import com.example.customer_service.enums.Country;
 import com.example.customer_service.mapper.AddressMapper;
 import com.example.customer_service.model.Address;
 import com.example.customer_service.repository.AddressRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.Simple.class) // Metodların adlarını belirliyor
 public class AddressServiceTest {
 
     @Mock
