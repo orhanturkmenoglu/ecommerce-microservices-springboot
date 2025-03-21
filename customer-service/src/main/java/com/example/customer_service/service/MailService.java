@@ -20,20 +20,6 @@ public class MailService {
     private final TemplateEngine templateEngine; // Thymeleaf template engine
 
 
-    // Basit bir e-posta gönderim metodu
-    public void sendSimpleEmail(String to, String subject, String text) throws Exception {
-      try {
-          SimpleMailMessage message = new SimpleMailMessage();
-          message.setTo(to);
-          message.setSubject(subject);
-          message.setText(text);
-          javaMailSender.send(message);
-          log.info("MailService::sendSimpleEmail  message : {}",message);
-      } catch (Exception exception){
-          throw  new Exception("Exception : "+exception.getMessage());
-      }
-    }
-
     // HTML içerikli e-posta gönderim metodu
     public void sendHtmlEmail(String to, String subject, String customerName, String customerId, String customerEmail) throws Exception {
         try {
