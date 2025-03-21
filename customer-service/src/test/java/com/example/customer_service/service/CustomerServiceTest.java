@@ -8,8 +8,7 @@ import com.example.customer_service.mapper.CustomerMapper;
 import com.example.customer_service.model.Address;
 import com.example.customer_service.model.Customer;
 import com.example.customer_service.repository.CustomerRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,6 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.IndicativeSentences.class) // Metodların adlarını belirliyor
 public class CustomerServiceTest {
 
     @Mock
