@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +54,6 @@ public class PaymentService {
 
     private final PaymentMessageSender paymentMessageSender;
 
-    private final InvoiceClientService invoiceClientService;
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -152,6 +150,11 @@ public class PaymentService {
         // Stripe ödeme durumu kontrolü
         switch (paymentStatus) {
             case "paid":
+                savedPayment.setPaymentStatus(PaymentStatus.FAILED);
+                log.warn("Payment failed, updating status to FAILED");
+                break;
+
+            case "unpaid":
                 savedPayment.setPaymentStatus(PaymentStatus.COMPLETED);
                 log.info("Payment successful, updating status to COMPLETED");
 
@@ -165,22 +168,9 @@ public class PaymentService {
 
 
                 // Fatura oluştur ve kaydet
-                Map<String, Object> invoiceData = Map.of(
-                        "orderId", order.getId(),
-                        "customerId", customer.getId(),
-                        "totalAmount", order.getTotalAmount(),
-                        "quantity", order.getQuantity(),
-                        "productName", "Test Product"
-                );
-                Invoice invoice =  invoiceClientService.createInvoice(invoiceData);
-                log.info("Invoice created with ID: {}", invoice.getInvoiceNumber());
                 break;
 
 
-            case "unpaid":
-                savedPayment.setPaymentStatus(PaymentStatus.FAILED);
-                log.warn("Payment failed, updating status to FAILED");
-                break;
 
             case "no_payment_required":
                 savedPayment.setPaymentStatus(PaymentStatus.NO_PAYMENT_REQUIRED);
@@ -364,7 +354,7 @@ public class PaymentService {
             paymentMessageSender.sendInventoryUpdateMessage(inventory);
             log.info("Inventory update message sent for product id: {}", inventory.getId());
         } catch (Exception e) {
-            // RabbitMQ ile mesaj gönderme sırasında bir hata oluştu
+            // Kafka ile mesaj gönderme sırasında bir hata oluştuğunda.
             log.error("Failed to send inventory update message for product id: {}. Error: {}", inventory.getId(), e.getMessage(), e);
         }
     }

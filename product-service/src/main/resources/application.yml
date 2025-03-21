@@ -1,14 +1,12 @@
 server:
   port: 8080
 
-
 spring:
   application:
     name: PRODUCT-SERVICE
 
   profiles:
     active: prod
-
 
   datasource:
     url: jdbc:mysql://localhost:3306/microservice
@@ -30,17 +28,13 @@ spring:
   cache:
     type: redis
 
-
 # swagger-ui configç
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html  #default path.
-
+    path: /swagger-ui.html #default path.
 
   config:
     import: optional:configserver:http://localhost:8084
-
-
 
 management:
   health:
@@ -50,46 +44,41 @@ management:
   endpoints:
     web:
       exposure:
-        include: health  # Yani, /actuator/health endpoint'i HTTP isteklerine cevap verecektir.
+        include: health # Yani, /actuator/health endpoint'i HTTP isteklerine cevap verecektir.
   #Bu ayar, uygulamanızın sağlık (health) endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir. Özellikle health altındaki show-details parametresi, bu endpoint'in ne kadar ayrıntılı bilgi sunacağını kontrol eder.
   endpoint:
     health:
       show-details: always # : Sağlık endpoint'inin sağladığı raporlarda detaylı bilgilerin gösterilip gösterilmeyeceğini belirtir.
   tracing: #zipkin config
     sampling:
-      probability: 1.0  #her isteği takip edecek
-
-
+      probability: 1.0 #her isteği takip edecek
 
 resilience4j:
   circuitbreaker:
     instances:
       inventoryServiceBreaker: #inventoryServiceBreaker adlı bir Circuit Breaker örneği için spesifik konfigürasyonları tanımlar.
-        registerHealthIndicator: true  # Circuit Breaker'ın sağlık durumu bilgisinin Actuator'a kayıt edilmesini sağlar.
-        eventConsumerBufferSize: 10   # 10 değeri, olay tüketicisi için tampon boyutunu belirtir. Bu, Circuit Breaker olaylarının kaç tanesinin tamponda tutulacağını belirler.
-        failureRateThreshold: 50      # Hata oranı eşiğini belirler.Circuit Breaker'ın devreye girmesi için gereken hata oranı eşiğidir (%50).
-        minimumNumberOfCalls: 5       # Circuit Breaker'ın aktif hale gelmesi için gereken minimum çağrı sayısını belirler.
+        registerHealthIndicator: true # Circuit Breaker'ın sağlık durumu bilgisinin Actuator'a kayıt edilmesini sağlar.
+        eventConsumerBufferSize: 10 # 10 değeri, olay tüketicisi için tampon boyutunu belirtir. Bu, Circuit Breaker olaylarının kaç tanesinin tamponda tutulacağını belirler.
+        failureRateThreshold: 50 # Hata oranı eşiğini belirler.Circuit Breaker'ın devreye girmesi için gereken hata oranı eşiğidir (%50).
+        minimumNumberOfCalls: 5 # Circuit Breaker'ın aktif hale gelmesi için gereken minimum çağrı sayısını belirler.
         automatic-transition-from-open-to-half-open-enabled: true # Circuit Breaker'ın otomatik olarak açık durumdan yarı açık duruma geçiş yapıp yapmayacağını belirler.
-        waitDurationInOpenState: 6s              # Circuit Breaker'ın açık durumda ne kadar süre kalacağını belirler.
+        waitDurationInOpenState: 6s # Circuit Breaker'ın açık durumda ne kadar süre kalacağını belirler.
         permittedNumberOfCallsInHalfOpenState: 3 # : Yarı açık durumda izin verilen çağrı sayısını belirler.
-        slidingWindowSize: 10                    # Kayar pencere boyutunu ayarlar.Circuit Breaker, hata oranını hesaplamak için bu pencere içindeki çağrıları kullanır.
-        slidingWindowType: COUNT_BASED           # Kayar pencere tipini belirler.
-
+        slidingWindowSize: 10 # Kayar pencere boyutunu ayarlar.Circuit Breaker, hata oranını hesaplamak için bu pencere içindeki çağrıları kullanır.
+        slidingWindowType: COUNT_BASED # Kayar pencere tipini belirler.
 
   retry: #  retry (yeniden deneme) mekanizması
     instances:
       inventoryServiceBreaker:
-        max-attempts: 3     # kaç kez yeniden deneneceğini belirtir.
-        wait-duration: 5s   # iki deneme arasındaki bekleme süresini belirtir.
-
+        max-attempts: 3 # kaç kez yeniden deneneceğini belirtir.
+        wait-duration: 5s # iki deneme arasındaki bekleme süresini belirtir.
 
   ratelimiter: #  rate limiter (oran sınırlayıcı) kullanarak belirli bir süre içinde belirli sayıda istek kabul edebilirsiniz
     instances:
       createProductLimiter:
-        limit-refresh-period: 4s    # limitin ne sıklıkla yenileneceğini belirtir.
-        limit-for-period: 2         #her dönem için izin verilen maksimum çağrı sayısını belirtir.
-        timeout-duration: 0s        # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir
-
+        limit-refresh-period: 4s # limitin ne sıklıkla yenileneceğini belirtir.
+        limit-for-period: 2 #her dönem için izin verilen maksimum çağrı sayısını belirtir.
+        timeout-duration: 0s # rate limiter'a ulaşılabilir olmayı beklemek için ne kadar süre bekleyeceğini belirtir
 
 
   #eureka:

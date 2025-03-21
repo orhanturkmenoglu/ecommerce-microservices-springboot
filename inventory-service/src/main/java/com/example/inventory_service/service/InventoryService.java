@@ -1,5 +1,6 @@
 package com.example.inventory_service.service;
 
+import com.example.inventory_service.consumer.KafkaConsumer;
 import com.example.inventory_service.dto.InventoryRequestDto;
 import com.example.inventory_service.dto.InventoryResponseDto;
 import com.example.inventory_service.dto.InventoryUpdateRequestDto;
