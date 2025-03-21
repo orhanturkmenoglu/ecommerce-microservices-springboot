@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayNameGeneration(DisplayNameGenerator.IndicativeSentences.class) // Metodların adlarını belirliyor
+@DisplayNameGeneration(DisplayNameGenerator.Simple.class) // Metodların adlarını belirliyor
 public class CustomerServiceTest {
 
     @Mock
