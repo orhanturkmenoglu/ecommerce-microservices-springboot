@@ -49,13 +49,24 @@ public class CustomerServiceTest {
 
     @BeforeEach
     public void setUp() {
-        // CustomerRequestDto hazırlığı
+
+        // Müşteri nesnesi oluşturuluyor
+        customer = new Customer();
+        customer.setId("CUST1234");
+        customer.setFirstName("Orhan");
+        customer.setLastName("TÜRKMENOĞLU");
+        customer.setPhoneNumber("5555555555");
+        customer.setEmail("orhanturkmenoglu1@gmail.com");
+        customer.setCreatedDate(LocalDateTime.now());
+        customer.setAddressList(Collections.singletonList(address));
+
+        // CustomerRequestDto nesnesi oluşturuluyor
         customerRequestDto = new CustomerRequestDto();
-        customerRequestDto.setFirstName("Orhan");
-        customerRequestDto.setLastName("TÜRKMENOĞLU");
-        customerRequestDto.setPhoneNumber("5555555555");
-        customerRequestDto.setEmail("orhanturkmenoglu1@gmail.com");
-        customerRequestDto.setCreatedDate(LocalDateTime.now());
+        customerRequestDto.setFirstName(customer.getFirstName());
+        customerRequestDto.setLastName(customer.getLastName());
+        customerRequestDto.setPhoneNumber(customer.getPhoneNumber());
+        customerRequestDto.setEmail(customer.getEmail());
+        customerRequestDto.setCreatedDate(customer.getCreatedDate());
 
         // Address nesnesi oluşturuluyor
         address = new Address();
@@ -69,17 +80,6 @@ public class CustomerServiceTest {
         address.setDescription("Ev Adresi");
 
         customerRequestDto.setAddressList(List.of(address));
-
-        // Müşteri nesnesi oluşturuluyor
-        customer = new Customer();
-        customer.setId("CUST1234");
-        customer.setFirstName("Orhan");
-        customer.setLastName("TÜRKMENOĞLU");
-        customer.setPhoneNumber("5555555555");
-        customer.setEmail("orhanturkmenoglu1@gmail.com");
-        customer.setCreatedDate(LocalDateTime.now());
-        customer.setAddressList(Collections.singletonList(address));
-
 
         // CustomerUpdateRequestDto hazırlanıyor
         customerUpdateRequestDto = new CustomerUpdateRequestDto();
