@@ -1,6 +1,5 @@
 package com.example.inventory_service.service;
 
-import com.example.inventory_service.consumer.KafkaConsumer;
 import com.example.inventory_service.dto.InventoryRequestDto;
 import com.example.inventory_service.dto.InventoryResponseDto;
 import com.example.inventory_service.dto.InventoryUpdateRequestDto;
@@ -30,8 +29,14 @@ public class InventoryService {
     @Transactional
     public InventoryResponseDto addInventory(InventoryRequestDto inventoryRequestDto) {
 
+
+
         log.info("InventoryService::addInventory started");
         Inventory inventory = inventoryMapper.mapToInventory(inventoryRequestDto);
+
+        if (inventory == null) {
+            throw new NullPointerException("Inventory cannot be null");
+        }
 
         log.info("InventoryService::addInventory inventory :{}", inventory);
         Inventory savedInventory = inventoryRepository.save(inventory);
@@ -48,6 +53,10 @@ public class InventoryService {
         log.info("InventoryService::getAllInventories started");
 
         List<Inventory> inventoryList = inventoryRepository.findAll();
+
+        if (inventoryList.isEmpty()) {
+            throw new NullPointerException("Inventories not found");
+        }
 
         log.info("InventoryService::getAllInventories finished");
         return inventoryMapper.mapToInventoryResponseDtoList(inventoryList);
