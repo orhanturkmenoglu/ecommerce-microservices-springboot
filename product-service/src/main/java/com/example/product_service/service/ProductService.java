@@ -56,7 +56,7 @@ public class ProductService {
 
         if (saveProduct.getId() == null) {
             log.error("ProductService::createProduct - Product ID is null after saving.");
-            throw new IllegalStateException("Product ID should not be null after saving.");
+            throw new NullPointerException("Product ID should not be null after saving.");
         }
 
         log.info("ProductService::createProduct - Creating inventory for product id: {} , product: {}",
@@ -87,10 +87,6 @@ public class ProductService {
     @Cacheable(value = "products", key = "'all'")
     public List<ProductResponseDto> getProductsAll() throws ServiceUnavailableException {
         log.info("ProductService::getProductsAll started");
-
-        if (LocalDateTime.now().getHour() == 17) {
-            throw new ServiceUnavailableException(ProductMessage.SERVICE_UNAVAILABLE_EXCEPTION);
-        }
 
         List<Product> productList = getProductsList();
 
