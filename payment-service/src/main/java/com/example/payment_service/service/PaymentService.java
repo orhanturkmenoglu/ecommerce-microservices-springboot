@@ -197,7 +197,7 @@ public class PaymentService {
     }
 
 
-    public PaymentResponseDto paymentServiceFallback(PaymentRequestDto paymentRequestDto, Throwable t) {
+    private PaymentResponseDto paymentServiceFallback(PaymentRequestDto paymentRequestDto, Throwable t) {
         log.error("Payment processing failed: {}", t.getMessage());
         return PaymentResponseDto.builder()
                 .paymentStatus(PaymentStatus.FAILED)
@@ -392,7 +392,7 @@ public class PaymentService {
                 .orderId("")
                 .amount(0.0)
                 .paymentStatus(PaymentStatus.FAILED)
-                .build();
+                .quantity(1).build();
     }
 
 }
