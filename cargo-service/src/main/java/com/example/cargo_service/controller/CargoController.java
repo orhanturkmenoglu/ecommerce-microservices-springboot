@@ -57,7 +57,17 @@ public class CargoController {
                     @ApiResponse(responseCode = "404", description = "Cargo not found")
             })
     public ResponseEntity<CargoResponseDto> getCargoById(@PathVariable("cargoId") String cargoId) {
+
+        if (cargoId == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
         CargoResponseDto cargo = cargoService.getCargoById(cargoId);
+
+        if (cargo == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
         return ResponseEntity.ok(cargo);
     }
 
