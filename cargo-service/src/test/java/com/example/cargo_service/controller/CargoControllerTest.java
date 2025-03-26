@@ -108,7 +108,7 @@ public class CargoControllerTest {
     }
 
     @Test
-    public void getCargoList_ShouldReturnCargoList_WhenCargosExist() throws Exception {
+    public void getCargoList_ShouldReturnCargoList_WhenCargoExist() throws Exception {
 
         when(cargoService.getCargoList()).thenReturn(List.of(cargoResponseDto));
 
