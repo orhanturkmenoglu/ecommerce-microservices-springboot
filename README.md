@@ -17,6 +17,8 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * Redis: Hızlı veri erişimi ve önbellekleme için.
 * Swagger UI: API belgeleri için kullanıcı dostu arayüz.
 * Docker ve Docker Compose: Sistem bileşenlerinin sorunsuz çalışmasını sağlamak için kapsayıcı yönetimi ve konfigürasyonu.
+* JUnit & Mockito: Unit test yazmanın temel araçları; doğru ve hızlı testler yazabilmek için kullanıyorum.
+* FeignClient & MockBean: Mikroservisler arası iletişimi test etmek için son derece kullanışlı.
   
 🔑 Yeni Gelen Özellikler:
 
