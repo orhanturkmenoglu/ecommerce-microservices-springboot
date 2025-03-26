@@ -102,7 +102,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    public void createCustomer_ShouldReturnCustomerResponseDto_WhenCustomerExists() throws Exception {
+    public void createCustomer_ShouldReturnCustomerResponseDto_WhenValidRequest() throws Exception {
         when(customerService.createCustomer(any(CustomerRequestDto.class))).thenReturn(customerResponseDto);
 
         mockMvc.perform(post("/api/v1/customers")
@@ -114,7 +114,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    public void getCustomersAll_ShouldReturnCustomerList_WhenCustomerExist() throws Exception {
+    public void getAllCustomers_ShouldReturnListOfCustomers_WhenCustomersExist() throws Exception {
         when(customerService.getCustomersAll()).thenReturn(List.of(customerResponseDto));
 
         mockMvc.perform(get("/api/v1/customers/all"))
@@ -124,7 +124,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    public void getCustomerById_ShouldReturnCustomerResponseDto_WhenCustomerExists() throws Exception {
+    public void getCustomerById_ShouldReturnCustomerResponseDto_WhenCustomerByIdExists() throws Exception {
         when(customerService.getCustomerById("CUST1234")).thenReturn(customerResponseDto);
 
         mockMvc.perform(get("/api/v1/customers/{customerId}", "CUST1234"))
@@ -133,7 +133,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    public void getCustomersByFirstName_ShouldReturnListOfCustomerResponseDto_WhenCustomerExists() throws Exception {
+    public void getCustomersByFirstName_ShouldReturnListOfCustomerResponseDto_WhenCustomerByFirstNameExists() throws Exception {
         when(customerService.getCustomersByFirstName("Orhan")).thenReturn(List.of(customerResponseDto));
 
         mockMvc.perform(get("/api/v1/customers/customerByFirstName")
