@@ -8,6 +8,7 @@ GitHub reposunu kendi hesabınıza fork'layarak projeyi kopyalayın.
 👉 [GitHub Repo Linki](https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot)
 
 2.Yeni Bir Branch Oluşturun
+
 🔹git checkout -b ilk-gorev
 
 3.Belirlenen Görevi Tamamlayın
