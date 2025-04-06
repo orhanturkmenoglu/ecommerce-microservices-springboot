@@ -1,3 +1,17 @@
+
+🚀 Projeyi Nasıl İndirebilirsiniz?
+
+1. GitHub Reposunu Klonlama:
+* Projeyi bilgisayarınıza indirmek için aşağıdaki komutları kullanabilirsiniz:
+
+* git clone https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot.git
+* cd ecommerce-microservices-springboot
+
+2. Bağımlılıkları Yükleyin:
+* Projeyi açtıktan sonra, gerekli bağımlılıkları yüklemek için Maven veya Gradle kullanabilirsiniz. Örneğin, Maven için:
+* mvn clean install
+
+
 🚀 E-commerce-Springboot ile Mikroservis Mimarisine Sahip E-ticaret Projemizi Tanıtıyorum! 🛒
 
 GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springboot adlı e-ticaret uygulamamız, Spring Boot kullanarak mikroservis mimarisiyle oluşturulmuştur. Bu proje, modern mikroservis kavramlarının ve en iyi uygulamaların uygulanmasını göstermektedir.
@@ -115,8 +129,12 @@ Cargo Service:
 * DELETE /api/v1/cargos/{cargoId}: Belirli bir ID'ye sahip kargoyu siler.
 
 📈 Gelecekteki Geliştirmeler:
-
+* Yapay Zeka Destekli Öneri Sistemi: Kullanıcıların alışveriş alışkanlıklarını analiz ederek, kişiye özel ürün önerileri sunmak için yapay zeka tabanlı bir öneri motoru entegre etmek.
+* Chatbot Entegrasyonu: Müşteri hizmetleri için doğal dil işleme (NLP) tabanlı bir chatbot entegre etmek, kullanıcılara hızlı ve etkili destek sağlamak.
+* Dinamik Fiyatlandırma Sistemi: Talep, envanter durumu ve rekabet analizi gibi faktörlere göre fiyatları otomatik olarak ayarlayabilen bir yapay zeka destekli dinamik fiyatlandırma mekanizması eklemek.
 * GraphQL Desteği: API'yi daha esnek hale getirmek için GraphQL entegrasyonu.
 * Test Otomasyonu ve CI/CD Entegrasyonu: Sürekli entegrasyon ve dağıtım (CI/CD) süreçlerini otomatize etmek.
-* Bildirim servisi eklenmesi.
+* API Rate Limiting ve Throttling: API'yi aşırı yükten korumak için rate limiting ve throttling mekanizmaları eklemek.
+* Kubernetes ve Helm Kullanımı: Uygulamanın ölçeklenebilirliğini artırmak için Kubernetes üzerinde çalıştırılacak şekilde yapılandırmak ve Helm chart’ları ile dağıtım yapmak.
+* WebSocket Desteği: Gerçek zamanlı bildirimler ve veri güncellemeleri için WebSocket desteği eklemek.
 
