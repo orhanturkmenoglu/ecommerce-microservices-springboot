@@ -1,18 +1,6 @@
 
-🚀 Projeyi Nasıl İndirebilirsiniz?
 
-1. GitHub Reposunu Klonlama:
-* Projeyi bilgisayarınıza indirmek için aşağıdaki komutları kullanabilirsiniz:
-
-* git clone https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot.git
-* cd ecommerce-microservices-springboot
-
-2. Bağımlılıkları Yükleyin:
-* Projeyi açtıktan sonra, gerekli bağımlılıkları yüklemek için Maven veya Gradle kullanabilirsiniz. Örneğin, Maven için:
-* mvn clean install
-
-
-🚀 E-commerce-Springboot ile Mikroservis Mimarisine Sahip E-ticaret Projemizi Tanıtıyorum! 🛒
+🚀 E-commerce-Springboot: Mikroservis Tabanlı E-Ticaret Uygulaması 🛒 
 
 GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springboot adlı e-ticaret uygulamamız, Spring Boot kullanarak mikroservis mimarisiyle oluşturulmuştur. Bu proje, modern mikroservis kavramlarının ve en iyi uygulamaların uygulanmasını göstermektedir.
 
@@ -56,77 +44,16 @@ Stripe API: Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bi
 * payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
 * cargo-service: Kargo durumlarını yönetir; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır.
   
-🌐 Endpointler:
+📥 Projeyi İndirme ve Çalıştırma
+1. GitHub Reposunu Klonlayın
+Projeyi bilgisayarınıza klonlamak için:
+* git clone https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot.git
+* cd ecommerce-microservices-springboot
+  
+2. Bağımlılıkları Yükleyin
+Projeyi açtıktan sonra, gerekli bağımlılıkları yüklemek için Maven veya Gradle kullanabilirsiniz. Maven için şu komutu çalıştırın:
+* mvn clean install
 
-Customer Service:
-
-* POST /api/v1/customers: Yeni müşteri kaydı oluştur.
-* GET /api/v1/customers/all: Tüm müşterileri listele.
-* GET /api/v1/customers/{customerId}: Belirli bir müşteri bilgilerini ID ile getir.
-* GET /api/v1/customers/customerByFirstName: Belirli bir isimle müşterileri listele.
-* GET /api/v1/customers/track-cargo/{trackingNumber} :Müşterinin belirli bir kargonun ayrıntılarını izleme numarasına göre almanıza olanak tanır.
-* PUT /api/v1/customers/{customerId}: Müşteri bilgilerini güncelle. (Bu işlem sırasında müşteri adresi güncellenmez. Adres güncellemesi için ayrı bir endpoint kullanılmalıdır.)
-* DELETE /api/v1/customers/{customerId}: Müşteri kaydını sil.
-
-Address Service:
-
-* GET /api/v1/addresses/all: Tüm adresleri listele.
-* GET /api/v1/addresses/{addressId}: Belirli bir adresi ID ile getir.
-* PUT /api/v1/addresses/{addressId}: Adres bilgilerini güncelle. (Adres güncellemesi müşteri kaydından ayrı olarak yapılır.)
-* DELETE /api/v1/addresses/{addressId}: Belirli bir adres kaydını sil.
-
-Product Service:
-
-* POST /api/v1/products: Yeni ürün oluştur.
-* GET /api/v1/products/all: Tüm ürünleri listele.
-* GET /api/v1/products/{id}: Belirli bir ürünü ID ile getir.
-* GET /api/v1/products/inventoryById/{inventoryId}: Belirli bir envanter ID'si ile ürünü getir.
-* GET /api/v1/products/productByPriceRange?minPrice={minPrice}&maxPrice={maxPrice}: Belirtilen fiyat aralığındaki ürünleri listele.
-* GET /api/v1/products/productByQuantity?quantity={quantity}: Belirli miktarda olan ürünleri listele.
-* GET /api/v1/products/productByPriceGreaterThanEqual?price={price}: Belirli bir fiyatın üzerindeki ürünleri listele.
-* GET /api/v1/products/productByPriceLessThanEqual?price={price}: Belirli bir fiyatın altındaki ürünleri listele.
-* GET /api/v1/products/productByCategory?category={category}: Belirli bir kategoriye ait ürünleri listele.
-* PUT /api/v1/products: Ürünü güncelle (Ürün güncellendiğinde envanter servisi de güncellenir).
-* DELETE /api/v1/products/{id}: Ürünü sil (Ürün silindiğinde envanter servisi de güncellenir).
-
-Inventory Service:
-
-* POST /api/v1/inventories/create: Yeni envanter oluştur.
-* GET /api/v1/inventories/all: Tüm envanterleri listele.
-* GET /api/v1/inventories/{productId}: Belirli bir ürün ID'si ile envanteri getir.
-* GET /api/v1/inventories/getInventoryId/{id}: Belirli bir envanter ID'si ile envanteri getir.
-* PUT /api/v1/inventories/{inventoryId}: Envanteri güncelle.
-* DELETE /api/v1/inventories/{productId}: Envanteri sil.
-
-Order Service:
-
-* GET /api/v1/orders: Tüm siparişleri listele.
-* GET /api/v1/orders/{id}: Belirli bir siparişi ID ile getir.
-* GET /api/v1/orders/orderDateBetween?startDateTime={startDateTime}&endDateTime={endDateTime}: Belirtilen tarih aralığındaki siparişleri listele.
-* POST /api/v1/orders: Yeni sipariş oluştur.
-* PUT /api/v1/orders/{id}: Var olan bir siparişi güncelle.
-* DELETE /api/v1/orders/{id}: Belirli bir siparişi sil.
-
-Payment Service:
-
-* POST /api/v1/payments: Yeni ödeme oluştur (Sipariş verildikten sonra ödeme yapılması gerekir. RABBIT MQ üzerinden ödeme alındıktan sonra stok güncellemesi yapılır).
-* GET /api/v1/payments/{orderId}: Belirli bir sipariş ID'si ile ödeme durumunu getir.
-* GET /api/v1/payments/paymentById/{paymentId}: Belirli bir ödeme ID'si ile ödeme bilgilerini getir.
-* GET /api/v1/payments/paymentByType: Belirli bir ödeme türü ile ödeme bilgilerini getir.
-* GET /api/v1/payments/paymentDateBetween: Belirtilen tarihler arasında ödeme bilgilerini getir.
-* GET /api/v1/payments/paymentCustomerById/{customerId}: Belirli bir müşteri ID'si ile ödeme bilgilerini getir.
-* PUT /api/v1/payments: Ödemeyi güncelle (Ödeme yapıldıktan sonra RabbitMQ üzerinden stok miktarı güncellenir).
-* DELETE /api/v1/payments/{paymentId}: Ödemeyi sil.
-* POST /api/v1/payments/cancelPayment/{paymentId}: Belirli bir ödeme ID'si ile ödemeyi iptal et.
-
-Cargo Service:
-* POST /api/v1/cargos: Yeni bir kargo oluşturur.
-* GET /api/v1/cargos/all: Tüm kargoların listesini getirir.
-* GET /api/v1/cargos/{cargoId}: Belirli bir ID'ye sahip kargoyu getirir.
-* GET /api/v1/cargos/order/{orderId}: Belirli bir sipariş ID'sine bağlı kargoyu getirir.
-* GET /api/v1/cargos/trackingNumber/{trackingNumber}: Belirli bir takip numarasına sahip kargoyu getirir.
-* PUT /api/v1/cargos: Mevcut bir kargoyu günceller.
-* DELETE /api/v1/cargos/{cargoId}: Belirli bir ID'ye sahip kargoyu siler.
 
 📈 Gelecekteki Geliştirmeler:
 * Yapay Zeka Destekli Öneri Sistemi: Kullanıcıların alışveriş alışkanlıklarını analiz ederek, kişiye özel ürün önerileri sunmak için yapay zeka tabanlı bir öneri motoru entegre etmek.
@@ -138,3 +65,5 @@ Cargo Service:
 * Kubernetes ve Helm Kullanımı: Uygulamanın ölçeklenebilirliğini artırmak için Kubernetes üzerinde çalıştırılacak şekilde yapılandırmak ve Helm chart’ları ile dağıtım yapmak.
 * WebSocket Desteği: Gerçek zamanlı bildirimler ve veri güncellemeleri için WebSocket desteği eklemek.
 
+📝 Katkıda Bulunma
+Eğer projeye katkı sağlamak isterseniz, PR gönderebilir veya issue oluşturabilirsiniz. Her türlü geri bildirim ve katkı büyük bir heyecanla karşılanacaktır!
