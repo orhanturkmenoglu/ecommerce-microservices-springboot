@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.ServiceUnavailableException;
 import java.util.List;
@@ -41,6 +42,18 @@ public class ProductController {
         }
         ProductResponseDto createProduct = productService.createProduct(productRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createProduct);
+    }
+
+    @PostMapping("/{productId}/image")
+    public ResponseEntity<String> uploadProductImage(@PathVariable String productId,
+                                                     @RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = productService.uploadProductImage(productId, file);
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Resim yükleme işlemi başarısız oldu: " + e.getMessage());
+        }
     }
 
     @GetMapping("/all")

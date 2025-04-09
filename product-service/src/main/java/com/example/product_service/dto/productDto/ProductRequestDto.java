@@ -3,6 +3,7 @@ package com.example.product_service.dto.productDto;
 import com.example.product_service.dto.inventoryDto.InventoryRequestDto;
 import com.example.product_service.enums.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
@@ -28,6 +29,9 @@ public class ProductRequestDto implements Serializable {
     @Schema(description = "Name of the product", example = "Laptop")
     @NotEmpty(message = "Product name cannot be empty ")
     private String name;
+
+    @Schema(description = "Image URL of the product", example = "https://example.com/laptop.jpg")
+    private String imageUrl;
 
     @Schema(description = "Description of the product", example = "High-performance laptop for gaming and work")
     @NotEmpty(message = "Product description cannot be empty ")

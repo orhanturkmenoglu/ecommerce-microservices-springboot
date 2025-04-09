@@ -28,6 +28,9 @@ public class Product implements Serializable {
 
     private String name;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     private String description;
 
     @Enumerated(EnumType.STRING)

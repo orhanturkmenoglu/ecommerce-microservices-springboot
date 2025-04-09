@@ -27,6 +27,9 @@ public class ProductResponseDto implements Serializable {
     @Schema(description = "Name of the product", example = "Laptop")
     private String name;
 
+    @Schema(description = "Image URL of the product", example = "https://example.com/laptop.jpg")
+    private String imageUrl;
+
     @Schema(description = "Description of the product", example = "A high-performance laptop with 16GB RAM and 512GB SSD.")
     private String description;
 

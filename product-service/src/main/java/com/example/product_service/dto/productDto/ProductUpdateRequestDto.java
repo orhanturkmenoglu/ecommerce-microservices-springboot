@@ -27,6 +27,10 @@ public class ProductUpdateRequestDto implements Serializable {
     @Schema(description = "Name of the product", example = "Smartphone")
     private String name;
 
+    @NotEmpty(message = "Product image URL cannot be empty ")
+    @Schema(description = "Image URL of the product", example = "https://example.com/smartphone.jpg")
+    private String imageUrl;
+
     @NotEmpty(message = "Product description cannot be empty ")
     @Schema(description = "Description of the product", example = "Latest model with advanced features.")
     private String description;

@@ -8,6 +8,7 @@ import com.example.product_service.dto.productDto.ProductResponseDto;
 import com.example.product_service.dto.productDto.ProductUpdateRequestDto;
 import com.example.product_service.enums.Category;
 import com.example.product_service.exception.InventoryNotFoundException;
+import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.external.InventoryClientService;
 import com.example.product_service.mapper.ProductMapper;
 import com.example.product_service.model.Inventory;
@@ -19,16 +20,27 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.ServiceUnavailableException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +52,9 @@ public class ProductService {
     private final InventoryClientService inventoryClientService;
 
     private final ProductMapper productMapper;
+
+    private final String uploadDir = "uploads"; // proje kökünde olacak
+
 
     // create
     @Transactional
@@ -105,6 +120,40 @@ public class ProductService {
         return productMapper.mapToProductResponseDto(product);
     }
 
+    public String uploadProductImage(String productId, MultipartFile file) throws IOException {
+        // 5MB sınırı
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 5MB");
+        }
+
+        // Format kontrolü
+        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename()).toLowerCase();
+        if (!fileExtension.equals("jpg") && !fileExtension.equals("jpeg") && !fileExtension.equals("png")) {
+            throw new IllegalArgumentException("File format must be jpg, jpeg or png");
+        }
+
+        // Klasör oluştur (yoksa)
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Dosyayı kaydet
+        String fileName = UUID.randomUUID().toString() + "." + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Resim URL’si
+        String imageUrl = "/images/" + fileName;
+
+        // Ürünü güncelle
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Ürün bulunamadı"));
+        product.setImageUrl(imageUrl);
+        productRepository.save(product);
+
+        return imageUrl;
+    }
     // getInventoryById
     @Cacheable(value = "products", key = "#inventoryId")
     public ProductResponseDto getInventoryById(String inventoryId) {
