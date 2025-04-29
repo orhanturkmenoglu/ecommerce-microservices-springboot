@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="cargo-service" />
         <module name="config-server" />
+        <module name="auth-service" />
         <module name="inventory-service" />
         <module name="payment-service" />
         <module name="customer-service" />
@@ -19,7 +20,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="auth-service" target="17" />
       <module name="invoice-service" target="17" />
     </bytecodeTargetLevel>
   </component>
