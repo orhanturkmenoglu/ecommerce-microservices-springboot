@@ -1,0 +1,39 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: AUTH-SERVICE
+
+  datasource:
+    url: ${SPRING.DATASOURCE.URL:jdbc:mysql://${DATABASE.HOST:localhost}:3306/${DATABASE.NAME:microservice}}
+    username: ${SPRING.DATASOURCE.USERNAME:root}
+    password: ${SPRING.DATASOURCE.PASSWORD:12345}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  config:
+    import: optional:configserver:http://localhost:8084
+
+  security:
+    secret:
+       key: ${SPRING.SECURITY.SECRET.KEY:default}
+    access:
+      token:
+        expiration: ${SPRING.SECURITY.ACCESS.TOKEN.EXPIRATION:3600000}
+    refresh:
+      token:
+        expiration: ${SPRING.SECURITY.REFRESH.TOKEN.EXPIRATION:604800000}
+
+logging:
+  level:
+    org:
+      springframework: DEBUG
+

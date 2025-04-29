@@ -1,11 +1,9 @@
 package com.example.auth_service.model;
 
+import com.example.auth_service.enums.Role;
 import com.example.auth_service.utils.IdGenerator;
 import com.example.auth_service.utils.Prefix;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +25,9 @@ public class User {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -37,7 +38,7 @@ public class User {
         if (this.id == null) {
             this.id = IdGenerator.generateId(this);
         }
-        
+
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

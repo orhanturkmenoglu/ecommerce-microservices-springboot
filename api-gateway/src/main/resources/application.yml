@@ -1,68 +1,71 @@
 server:
-  port: 8083
-
+  port: 8092
 
 spring:
   application:
     name: API-GATEWAY
+
   cloud:
     gateway:
       routes:
         - id: PRODUCT-SERVICE
-          uri: lb://PRODUCT-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates:  #Yönlendirme kurallarını belirler. Örneğin, Path=/users/** ifadesi, /api/v1/products/** ile başlayan tüm istekleri bu rotaya yönlendirir.
+          uri: lb://PRODUCT-SERVICE
+          predicates:
             - Path=/api/v1/products/**
-
+          filters:
+            - JwtAuthenticationFilter
 
         - id: ORDER-SERVICE
-          uri: lb://ORDER-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler. Örneğin,
+          uri: lb://ORDER-SERVICE
+          predicates:
             - Path=/api/v1/orders/**
-
+          filters:
+            - JwtAuthenticationFilter
 
         - id: INVENTORY-SERVICE
-          uri: lb://INVENTORY-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler.
+          uri: lb://INVENTORY-SERVICE
+          predicates:
             - Path=/api/v1/inventories/**
-
+          filters:
+            - JwtAuthenticationFilter
 
         - id: PAYMENT-SERVICE
-          uri: lb://PAYMENT-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler.
+          uri: lb://PAYMENT-SERVICE
+          predicates:
             - Path=/api/v1/payments/**
-
+          filters:
+            - JwtAuthenticationFilter
 
         - id: CARGO-SERVICE
-          uri: lb://CARGO-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler.
+          uri: lb://CARGO-SERVICE
+          predicates:
             - Path=/api/v1/cargo/**
+          filters:
+            - JwtAuthenticationFilter
 
         - id: CUSTOMER-SERVICE
-          uri: lb://CUSTOMER-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler.
+          uri: lb://CUSTOMER-SERVICE
+          predicates:
             - Path=/api/v1/customers/**
+          filters:
+            - JwtAuthenticationFilter
 
         - id: AUTH-SERVICE
-          uri: lb://AUTH-SERVICE  #Hedef servis URI'si belirtilir. lb:// ile başlayan URI'ler, yük dengeleyici (load balancer) kullanılarak mikroservislere yönlendirilir.
-          predicates: #Yönlendirme kurallarını belirler.
+          uri: lb://AUTH-SERVICE
+          predicates:
             - Path=/api/v1/auth/**
+          filters:
+            - JwtAuthenticationFilter
 
+
+  security:
+    secret:
+      key: ${SPRING.SECURITY.SECRET.KEY:default}
 
   config:
     import: optional:configserver:http://localhost:8084
 
-
 logging:
   level:
-    org.springframework.cloud.gateway : DEBUG #Gateway için log seviyesini belirler.
+    org.springframework.cloud.gateway: DEBUG
 
-
-#eureka:
-#  instance:
-#    prefer-ip-address: true
-#
-#  client:
-#    register-with-eureka: true
-#    fetch-registry: true
-#    service-url:
-#      defaultZone : http://localhost:8761/eureka
