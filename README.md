@@ -4,7 +4,7 @@
 
 GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springboot adlı e-ticaret uygulamamız, Spring Boot kullanarak mikroservis mimarisiyle oluşturulmuştur. Bu proje, modern mikroservis kavramlarının ve en iyi uygulamaların uygulanmasını göstermektedir.
 
-🔧 Kullanılan Teknolojiler ve Araçlar:
+🔧 **Kullanılan Teknolojiler ve Araçlar:**
 
 * Spring Boot: Mikroservisler için temel çerçeve.
 * Spring Cloud Config: Merkezi yapılandırma yönetimi.
@@ -22,7 +22,7 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * JUnit & Mockito: Unit test yazmanın temel araçları; doğru ve hızlı testler yazabilmek için kullanıyorum.
 * FeignClient & MockBean: Mikroservisler arası iletişimi test etmek için son derece kullanışlı.
   
-🔑 Yeni Gelen Özellikler:
+🔑 **Yeni Gelen Özellikler:**
 
 ✅ **Jwt Authentication :** API Gateway üzerinden kimlik doğrulama ve yetkilendirme yapılarak sistemlere güvenli erişim sağlanması.
 💳 **Stripe API Entegrasyonu:** Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bir ödeme işlemcisidir. Stripe API, kullanıcıların kredi kartı ödemelerini güvenli bir şekilde alabilmesi için entegre edilmiştir. Müşterilerin ödeme işlemleri sırasında güvenli ve sorunsuz bir deneyim sunmayı amaçlar.
@@ -34,7 +34,7 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 
 ✨ Ayrıca, her gece saat 24:00'te otomatik olarak sepet temizleme işlemi yapılmaktadır. Bu özellik, tamamlanmamış ve 24 saatten eski siparişleri sistemden siler, böylece veritabanı ve sistem verimliliği korunmuş olur.
 
-📂 Proje Yapısı:
+📂 **Proje Yapısı:**
 
 * config-server: Merkezi yapılandırma sunucusu.
 * discovery-server: Eureka kullanarak servis kaydı.
@@ -47,7 +47,7 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
 * cargo-service: Kargo durumlarını yönetir; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır.
 
-🛠️ Nasıl Çalışır?
+🛠️ **Nasıl Çalışır?**
 
 Bu mikroservis tabanlı e-ticaret uygulaması, bir dizi bağımsız servisin birleşiminden oluşur. Her bir servis, kendi sorumluluğuna göre işlev görür ve diğer servislerle iletişim kurar. İşte uygulamanın genel işleyişi:
 
@@ -63,7 +63,7 @@ Bu mikroservis tabanlı e-ticaret uygulaması, bir dizi bağımsız servisin bir
 
 **Asenkron İletişim:** Kafka ile mikroservisler arası asenkron iletişim sağlanır.
   
-📥 Projeyi İndirme ve Çalıştırma
+📥 **Projeyi İndirme ve Çalıştırma**
 1. GitHub Reposunu Klonlayın
 Projeyi bilgisayarınıza klonlamak için:
 * git clone https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot.git
@@ -73,37 +73,12 @@ Projeyi bilgisayarınıza klonlamak için:
 Projeyi açtıktan sonra, gerekli bağımlılıkları yüklemek için Maven veya Gradle kullanabilirsiniz. Maven için şu komutu çalıştırın:
 * mvn clean install
 
-🔐 Örnek API Kullanımları
-👤 Kayıt – POST /auth/register
-Request:
-```
-{
-  "email": "orhanturkmenoglu@example.com",
-  "password": "securePassword123"
-}
-Response:
-{ "message": "User registered successfully." }
 
-🔑 Giriş – POST /auth/login
-```
-Request:
-{
-  "email": "orhanturkmenoglu@example.com",
-  "password": "securePassword123"
-}
-Response:
-{
-  "access_token": "JWT_ACCESS_TOKEN",
-  "refresh_token": "REFRESH_TOKEN"
-}
-
-
-
-📈 Gelecekteki Geliştirmeler:
+📈 **Gelecekteki Geliştirmeler:**
 * Test Otomasyonu ve CI/CD Entegrasyonu: Sürekli entegrasyon ve dağıtım (CI/CD) süreçlerini otomatize etmek.
 * API Rate Limiting ve Throttling: API'yi aşırı yükten korumak için rate limiting ve throttling mekanizmaları eklemek.
 * Kubernetes ve Helm Kullanımı: Uygulamanın ölçeklenebilirliğini artırmak için Kubernetes üzerinde çalıştırılacak şekilde yapılandırmak ve Helm chart’ları ile dağıtım yapmak.
 * WebSocket Desteği: Gerçek zamanlı bildirimler ve veri güncellemeleri için WebSocket desteği eklemek.
 
-📝 Katkıda Bulunma
+📝 **Katkıda Bulunma**
 Eğer projeye katkı sağlamak isterseniz, PR gönderebilir veya issue oluşturabilirsiniz. Her türlü geri bildirim ve katkı büyük bir heyecanla karşılanacaktır!
