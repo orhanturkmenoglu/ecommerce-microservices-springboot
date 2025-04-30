@@ -82,8 +82,4 @@ public class AuthService {
     }
 
 
-    public String test (){
-        return "test";
-    }
-
 }
