@@ -11,8 +11,8 @@ public class RouteValidator {
 
     // Kimlik doğrulama gerektirmeyen uç noktalar
     public static final List<String> openApiEndpoints = List.of(
-            "/api/auth/login",
-            "/api/auth/register");
+            "/api/v1/auth/login",
+            "/api/v1/auth/register");
 
     // Güvenli uç noktalar için predikat
     public Predicate<ServerHttpRequest> isSecured = serverHttpRequest ->

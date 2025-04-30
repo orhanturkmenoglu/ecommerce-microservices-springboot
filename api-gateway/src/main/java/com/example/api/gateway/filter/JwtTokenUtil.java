@@ -6,6 +6,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 
@@ -20,8 +21,18 @@ public class JwtTokenUtil {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
     }
 
-    public void validateToken(final String token) {
-        Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+    public Mono<Boolean> validateToken(final String token) {
+        return Mono.fromCallable(() -> {
+            try {
+                Jwts.parserBuilder()
+                        .setSigningKey(getSigningKey())
+                        .build()
+                        .parseClaimsJws(token);
+                return true;
+            } catch (Exception exception) {
+                return false;
+            }
+        });
     }
 
 
