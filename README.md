@@ -4,7 +4,7 @@
 
 GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springboot adlı e-ticaret uygulamamız, Spring Boot kullanarak mikroservis mimarisiyle oluşturulmuştur. Bu proje, modern mikroservis kavramlarının ve en iyi uygulamaların uygulanmasını göstermektedir.
 
-🔧 Kullanılan Teknolojiler ve Araçlar:
+🔧 **Kullanılan Teknolojiler ve Araçlar:**
 
 * Spring Boot: Mikroservisler için temel çerçeve.
 * Spring Cloud Config: Merkezi yapılandırma yönetimi.
@@ -22,16 +22,19 @@ GitHub'daki en son projemi paylaşmaktan heyecan duyuyorum - e-commerce-springbo
 * JUnit & Mockito: Unit test yazmanın temel araçları; doğru ve hızlı testler yazabilmek için kullanıyorum.
 * FeignClient & MockBean: Mikroservisler arası iletişimi test etmek için son derece kullanışlı.
   
-🔑 Yeni Gelen Özellikler:
+🔑 **Yeni Gelen Özellikler:**
 
-Keycloak: API Gateway üzerinden kimlik doğrulama ve yetkilendirme yapılarak sistemlere güvenli erişim sağlanması.
-Stripe API: Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bir ödeme işlemcisidir. Stripe API, kullanıcıların kredi kartı ödemelerini güvenli bir şekilde alabilmesi için entegre edilmiştir. Müşterilerin ödeme işlemleri sırasında güvenli ve sorunsuz bir deneyim sunmayı amaçlar.
+✅ **Jwt Authentication :** API Gateway üzerinden kimlik doğrulama ve yetkilendirme yapılarak sistemlere güvenli erişim sağlanması.
+💳 **Stripe API Entegrasyonu:** Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bir ödeme işlemcisidir. Stripe API, kullanıcıların kredi kartı ödemelerini güvenli bir şekilde alabilmesi için entegre edilmiştir. Müşterilerin ödeme işlemleri sırasında güvenli ve sorunsuz bir deneyim sunmayı amaçlar.
+🕛 **Zamanlanmış Görev:** Her gece 24:00'te tamamlanmamış sepetlerin otomatik temizlenmesi
 
-📌 Proje Özeti: Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve kayıt esnasında adres bilgilerini sağlamaları gerekmektedir. Bu süreç, API Gateway üzerinden Keycloak kullanılarak yapılan kimlik doğrulama ve yetkilendirme ile güvenli bir şekilde yönetilmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi için Stripe API kullanılarak ödeme güvenli bir şekilde alınmaktadır. Ödeme işlemi tamamlandıktan sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir.
+
+
+📌 **Proje Özeti:** Bu proje, servis kaydı, API geçidi, hata toleransı, merkezi yapılandırma ve ödeme yönetimi gibi çeşitli mikroservis kavramlarını içermektedir. Uygulama, müşteri yönetimi, adres yönetimi, ürün yönetimi, envanter yönetimi, sipariş yönetimi ve ödeme yönetimi gibi temel e-ticaret işlevlerini kapsamaktadır. Müşterilerin sipariş verebilmesi için önce sisteme kayıt olmaları ve giriş sağlamaları gerekmektedir. Bu süreç, API Gateway üzerinden Jwt Authentication kullanılarak yapılan kimlik doğrulama ve yetkilendirme ile güvenli bir şekilde yönetilmektedir. Sipariş verildikten sonra ödeme yapılması gerekmekte ve ödeme işlemi için Stripe API kullanılarak ödeme güvenli bir şekilde alınmaktadır. Ödeme işlemi tamamlandıktan sonra stok miktarı RabbitMQ üzerinden güncellenmektedir. Sipariş güncelleme esnasında ödeme durumu iptal edilir ve sipariş güncellendiğinde yeniden ödeme yapılması gerekir.
 
 ✨ Ayrıca, her gece saat 24:00'te otomatik olarak sepet temizleme işlemi yapılmaktadır. Bu özellik, tamamlanmamış ve 24 saatten eski siparişleri sistemden siler, böylece veritabanı ve sistem verimliliği korunmuş olur.
 
-📂 Proje Yapısı:
+📂 **Proje Yapısı:**
 
 * config-server: Merkezi yapılandırma sunucusu.
 * discovery-server: Eureka kullanarak servis kaydı.
@@ -43,8 +46,24 @@ Stripe API: Ödeme işlemlerini yönetmek için kullanılan güçlü ve esnek bi
 * order-service: Müşteri siparişlerini yönetir.
 * payment-service: Sipariş ödemelerini yönetir. (Sipariş verildikten sonra ödeme yapılması gerekir).
 * cargo-service: Kargo durumlarını yönetir; sipariş verildikten sonra kargo durumu hazırlanır ve ödeme tamamlandıktan sonra kargo siparişi tamamlanır.
+
+🛠️ **Nasıl Çalışır?**
+
+Bu mikroservis tabanlı e-ticaret uygulaması, bir dizi bağımsız servisin birleşiminden oluşur. Her bir servis, kendi sorumluluğuna göre işlev görür ve diğer servislerle iletişim kurar. İşte uygulamanın genel işleyişi:
+
+**Kullanıcı Kayıt ve Giriş İşlemi:** Kullanıcı, API Gateway üzerinden sisteme giriş yapar. Kimlik doğrulama, JWT Authentication kullanılarak yapılır.
+
+**Ürün ve Sipariş Yönetimi:** Kullanıcı, Product-Service üzerinden ürünleri görüntüler ve Order-Service üzerinden sipariş oluşturur.
+
+**Ödeme İşlemi:** Payment-Service devreye girer ve Stripe API ile ödeme alınır.
+
+**Kargo Durumu:** Sipariş ödendikten sonra, Cargo-Service ile kargo durumu takip edilir.
+
+**Veritabanı Temizliği:** Her gece saat 24:00'te tamamlanmamış siparişler sistemden temizlenir.
+
+**Asenkron İletişim:** Kafka ile mikroservisler arası asenkron iletişim sağlanır.
   
-📥 Projeyi İndirme ve Çalıştırma
+📥 **Projeyi İndirme ve Çalıştırma**
 1. GitHub Reposunu Klonlayın
 Projeyi bilgisayarınıza klonlamak için:
 * git clone https://github.com/orhanturkmenoglu/ecommerce-microservices-springboot.git
@@ -55,15 +74,11 @@ Projeyi açtıktan sonra, gerekli bağımlılıkları yüklemek için Maven veya
 * mvn clean install
 
 
-📈 Gelecekteki Geliştirmeler:
-* Yapay Zeka Destekli Öneri Sistemi: Kullanıcıların alışveriş alışkanlıklarını analiz ederek, kişiye özel ürün önerileri sunmak için yapay zeka tabanlı bir öneri motoru entegre etmek.
-* Chatbot Entegrasyonu: Müşteri hizmetleri için doğal dil işleme (NLP) tabanlı bir chatbot entegre etmek, kullanıcılara hızlı ve etkili destek sağlamak.
-* Dinamik Fiyatlandırma Sistemi: Talep, envanter durumu ve rekabet analizi gibi faktörlere göre fiyatları otomatik olarak ayarlayabilen bir yapay zeka destekli dinamik fiyatlandırma mekanizması eklemek.
-* GraphQL Desteği: API'yi daha esnek hale getirmek için GraphQL entegrasyonu.
+📈 **Gelecekteki Geliştirmeler:**
 * Test Otomasyonu ve CI/CD Entegrasyonu: Sürekli entegrasyon ve dağıtım (CI/CD) süreçlerini otomatize etmek.
 * API Rate Limiting ve Throttling: API'yi aşırı yükten korumak için rate limiting ve throttling mekanizmaları eklemek.
 * Kubernetes ve Helm Kullanımı: Uygulamanın ölçeklenebilirliğini artırmak için Kubernetes üzerinde çalıştırılacak şekilde yapılandırmak ve Helm chart’ları ile dağıtım yapmak.
 * WebSocket Desteği: Gerçek zamanlı bildirimler ve veri güncellemeleri için WebSocket desteği eklemek.
 
-📝 Katkıda Bulunma
+📝 **Katkıda Bulunma**
 Eğer projeye katkı sağlamak isterseniz, PR gönderebilir veya issue oluşturabilirsiniz. Her türlü geri bildirim ve katkı büyük bir heyecanla karşılanacaktır!
