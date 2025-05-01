@@ -1,6 +1,5 @@
 package com.example.auth_service.model;
 
-import com.example.auth_service.enums.Role;
 import com.example.auth_service.utils.IdGenerator;
 import com.example.auth_service.utils.Prefix;
 import jakarta.persistence.*;
@@ -9,31 +8,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Prefix("usr")
+@Prefix("token")
 @Entity
-@Table(name = "users")
+@Table(name = "tokens")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Token {
 
     @Id
     private String id;
 
-    private String email;
+    @Column(unique = true, length = 1000)
+    private String accessToken;
 
-    private String password;
+    @Column(unique = true, length = 1000)
+    private String refreshToken;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private boolean isActive;
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
-    private List<Token> tokens;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -44,6 +43,11 @@ public class User {
         }
 
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void update() {
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -19,18 +19,26 @@ spring:
       hibernate:
         format_sql: true
 
+  data:
+    redis:
+      host: ${SPRING.DATA.REDIS.HOST:localhost}
+      port: ${SPRING.DATA.REDIS.PORT:6379}
+
+
+
   config:
     import: optional:configserver:http://localhost:8084
 
   security:
     secret:
-       key: ${SPRING.SECURITY.SECRET.KEY:default}
+      key: ${SPRING.SECURITY.SECRET.KEY:default}
     access:
       token:
         expiration: ${SPRING.SECURITY.ACCESS.TOKEN.EXPIRATION:3600000}
     refresh:
       token:
         expiration: ${SPRING.SECURITY.REFRESH.TOKEN.EXPIRATION:604800000}
+
 
 logging:
   level:

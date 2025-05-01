@@ -1,6 +1,8 @@
 package com.example.api.gateway.filter;
 
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -24,10 +26,11 @@ public class JwtTokenUtil {
     public Mono<Boolean> validateToken(final String token) {
         return Mono.fromCallable(() -> {
             try {
-                Jwts.parserBuilder()
+                Jws<Claims> claims = Jwts.parserBuilder()
                         .setSigningKey(getSigningKey())
                         .build()
                         .parseClaimsJws(token);
+
                 return true;
             } catch (Exception exception) {
                 return false;

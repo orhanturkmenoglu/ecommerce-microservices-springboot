@@ -5,19 +5,24 @@ import com.example.auth_service.dto.request.UserRegistrationRequestDTO;
 import com.example.auth_service.dto.response.UserLoginResponseDTO;
 import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
 import com.example.auth_service.mapper.UserMapper;
+import com.example.auth_service.model.Token;
 import com.example.auth_service.model.User;
+import com.example.auth_service.repository.TokenRepository;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.utils.JwtTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
+    private final TokenRepository tokenRepository;
+    private final JwtTokenCacheService jwtTokenCacheService;
 
-
+    @Transactional
     public UserRegistrationResponseDTO register(UserRegistrationRequestDTO userRegistrationRequestDTO) {
 
         User user = UserMapper.mapToUser(userRegistrationRequestDTO);
@@ -46,6 +53,7 @@ public class AuthService {
     }
 
 
+    @Transactional
     public UserLoginResponseDTO login(UserLoginRequestDTO userLoginRequestDTO) {
 
         if (userLoginRequestDTO.getEmail() == null || userLoginRequestDTO.getPassword() == null) {
@@ -65,20 +73,61 @@ public class AuthService {
             throw new BadCredentialsException("Bad credentials");
         }
 
-        SecurityContextHolder.getContext().setAuthentication(authenticated);
-
         User user = userRepository.findByEmail(userLoginRequestDTO.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        log.info("User found : {}", user);
+        log.info("login:: User found : {}", user);
 
-        String accessToken = jwtTokenUtil.generateAccessToken(user);
-        String refreshToken = jwtTokenUtil.generateRefreshToken(user);
+        List<Token> allAccessTokenByUser = tokenRepository.findAllTokenByUser(user.getId());
 
-        log.info("Access token : {}", accessToken);
-        log.info("Refresh token : {}", refreshToken);
+        if (!allAccessTokenByUser.isEmpty()) {
+            allAccessTokenByUser.forEach(token -> token.setActive(false));
+            tokenRepository.saveAll(allAccessTokenByUser);
+        }
 
-        return new UserLoginResponseDTO(accessToken, refreshToken);
+
+        String oldAccessToken = jwtTokenCacheService.getAccessToken(user.getEmail());
+        String oldRefreshToken = jwtTokenCacheService.getRefreshToken(user.getEmail());
+
+        log.info("oldAccessToken : {}", oldAccessToken);
+        log.info("oldRefreshToken : {}", oldRefreshToken);
+
+        String newAccessToken = jwtTokenUtil.generateAccessToken(user);
+        String newRefreshToken = jwtTokenUtil.generateRefreshToken(user);
+
+        log.info("newAccessToken : {}", newAccessToken);
+        log.info("newRefreshToken : {}", newRefreshToken);
+
+        if (oldAccessToken != null && oldRefreshToken != null) {
+            jwtTokenCacheService.invalidateOldTokenAndStoreNew(oldAccessToken,
+                    newAccessToken, newRefreshToken, user.getEmail());
+        }
+
+        jwtTokenCacheService.storeAccessToken(newAccessToken, user.getEmail());
+        jwtTokenCacheService.storeRefreshToken(newRefreshToken, user.getEmail());
+
+        saveUserToken(newAccessToken, newRefreshToken, user);
+
+        return new UserLoginResponseDTO(newAccessToken, newRefreshToken);
+    }
+
+    private void saveUserToken(String accessToken, String refreshToken, User user) {
+
+        Claims claims = jwtTokenUtil.getClaims(accessToken);
+        String jti = claims.getId();
+
+        log.info("claims : {}", claims);
+        log.info("jti : {}", jti);
+
+        Token token = new Token();
+        token.setId(jti);
+        token.setAccessToken(accessToken);
+        token.setRefreshToken(refreshToken);
+        token.setActive(true);
+        token.setUser(user);
+
+        Token savedToken = tokenRepository.save(token);
+        log.info("Token saved : {}", savedToken);
     }
 
 
