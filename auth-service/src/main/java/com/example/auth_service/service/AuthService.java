@@ -1,32 +1,10 @@
 package com.example.auth_service.service;
 
-import com.example.auth_service.dto.request.UserLoginRequestDTO;
-import com.example.auth_service.dto.request.UserRegistrationRequestDTO;
-import com.example.auth_service.dto.response.UserLoginResponseDTO;
-import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
-import com.example.auth_service.mapper.UserMapper;
-import com.example.auth_service.model.Token;
-import com.example.auth_service.model.User;
-import com.example.auth_service.repository.TokenRepository;
-import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.utils.JwtTokenUtil;
-import io.jsonwebtoken.Claims;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-@Service
-@RequiredArgsConstructor
-@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -111,24 +89,148 @@ public class AuthService {
         return new UserLoginResponseDTO(newAccessToken, newRefreshToken);
     }
 
-    private void saveUserToken(String accessToken, String refreshToken, User user) {
+    public UserLoginResponseDTO refreshToken(String refreshToken) {
 
-        Claims claims = jwtTokenUtil.getClaims(accessToken);
-        String jti = claims.getId();
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            log.warn("Refresh token is null or empty");
+            throw new IllegalArgumentException("Refresh token cannot be null or empty");
+        }
 
-        log.info("claims : {}", claims);
-        log.info("jti : {}", jti);
+        Token existingToken = tokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> {
+                    log.warn("Refresh token not found in database");
+                    return new BadCredentialsException("Invalid refresh token");
+                });
 
-        Token token = new Token();
-        token.setId(jti);
-        token.setAccessToken(accessToken);
-        token.setRefreshToken(refreshToken);
-        token.setActive(true);
-        token.setUser(user);
+        String userEmail = existingToken.getUser().getEmail();
+        log.info("Refresh token found for user: {}", userEmail);
 
-        Token savedToken = tokenRepository.save(token);
-        log.info("Token saved : {}", savedToken);
+        if (!existingToken.isActive()){
+            log.warn("Refresh token is not active for user: {}", userEmail);
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+
+        boolean isValidInCache = jwtTokenCacheService.isRefreshTokenValid(refreshToken, userEmail);
+
+        if (!isValidInCache) {
+            log.warn("Refresh token is not valid in cache for user: {}", userEmail);
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+
+        jwtTokenCacheService.isTokenBlackListed(refreshToken);
+
+        existingToken.setActive(false);
+        tokenRepository.save(existingToken);
+        log.info("Old refresh token deactivated for user: {}", userEmail);
+
+        String newAccessToken = jwtTokenUtil.generateAccessToken(existingToken.getUser());
+        String newRefreshToken = jwtTokenUtil.generateRefreshToken(existingToken.getUser());
+
+        jwtTokenCacheService.storeAccessToken(newAccessToken, userEmail);
+        jwtTokenCacheService.storeRefreshToken(newRefreshToken, userEmail);
+
+        saveUserToken(newAccessToken, newRefreshToken, existingToken.getUser());
+
+        log.info("New tokens generated and saved successfully for user: {}", userEmail);
+
+        return new UserLoginResponseDTO(newAccessToken, newRefreshToken);
+    }
+}
+
+public UserUpdatePasswordResponseDTO updatePassword (UserUpdatePasswordRequestDTO updatePasswordRequestDTO){
+
+    if (updatePasswordRequestDTO.getOldPassword() == null
+            || updatePasswordRequestDTO.getNewPassword() == null
+            || updatePasswordRequestDTO.getConfirmPassword() == null) {
+
+        log.error("One or more required password fields are null: old={}, new={}, confirm={}",
+                updatePasswordRequestDTO.getOldPassword(),
+                updatePasswordRequestDTO.getNewPassword(),
+                updatePasswordRequestDTO.getConfirmPassword());
+
+        throw new IllegalArgumentException("Password fields must not be null");
+
     }
 
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+    if (!authentication.isAuthenticated()) {
+        log.warn("Unauthenticated access attempt to password update");
+        throw new BadCredentialsException("User is not authenticated");
+    }
+
+    String username = authentication.getName();
+
+    User user = userRepository.findByEmail(username)
+            .orElseThrow(() -> {
+                log.warn("User not found with email: {}", username);
+                return new UsernameNotFoundException("User not found with email: " + username);
+            });
+
+    if (!passwordEncoder.matches(updatePasswordRequestDTO.getOldPassword(), user.getPassword())) {
+        log.warn("Old password does not match for user: {}", username);
+        throw new BadCredentialsException("Bad credentials for old password match check failed");
+    }
+
+    if (!updatePasswordRequestDTO.getNewPassword().equals(updatePasswordRequestDTO.getConfirmPassword())) {
+        log.warn("New password and confirmation do not match for user: {}", username);
+        throw new IllegalArgumentException("New password and confirmation do not match");
+    }
+
+    user.setPassword(passwordEncoder.encode(updatePasswordRequestDTO.getNewPassword()));
+    userRepository.save(user);
+
+    log.info("Password updated successfully for user: {}", username);
+
+    return new UserUpdatePasswordResponseDTO("Password updated successfully");
+}
+
+public void logout(String token) {
+
+    if (token == null) {
+        throw new IllegalArgumentException("Token cannot be null or empty");
+    }
+
+    String extractedUsername = jwtTokenUtil.extractUsername(token);
+
+    User user = userRepository.findByEmail(extractedUsername)
+            .orElseThrow(() -> new UsernameNotFoundException("User with email " + extractedUsername + " not found"));
+
+    log.info("logout:: User found: {}", user);
+
+
+    List<Token> tokenList = tokenRepository.findAllTokenByUser(user.getId());
+
+    if (!tokenList.isEmpty()) {
+
+        tokenList.forEach(t -> t.setActive(false));
+
+        tokenRepository.saveAll(tokenList);
+        log.info("logout:: Inactivated {} tokens for user: {}", tokenList.size(), user);
+
+        String cleanToken = token.replace("Bearer ", "").trim();
+        jwtTokenCacheService.addToBlacklist(cleanToken);
+        log.info("logout:: Token added to blacklist: {}", cleanToken);
+    } else {
+        log.warn("logout:: No active tokens found for user: {}", user);
+    }
+}
+
+private void saveUserToken(String accessToken, String refreshToken, User user) {
+
+    Claims claims = jwtTokenUtil.getClaims(accessToken);
+    String jti = claims.getId();
+
+    log.info("claims : {}", claims);
+    log.info("jti : {}", jti);
+
+    Token token = new Token();
+    token.setId(jti);
+    token.setAccessToken(accessToken);
+    token.setRefreshToken(refreshToken);
+    token.setActive(true);
+    token.setUser(user);
+
+    Token savedToken = tokenRepository.save(token);
+    log.info("Token saved : {}", savedToken);
 }

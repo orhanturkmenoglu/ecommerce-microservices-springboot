@@ -42,13 +42,14 @@ public class JwtTokenUtil {
             return redisTemplate.hasKey("BLACKLISTED:" + token)
                     .flatMap(isBlacklisted -> {
                         if (Boolean.TRUE.equals(isBlacklisted)) {
+                            System.out.println("Blacklisted token: " + token);
                             return Mono.just(false); // blacklistteyse geçersiz
                         }
 
-                        // Access token kontrolü (isteğe bağlı)
                         return redisTemplate.opsForValue()
                                 .get("access:" + email)
-                                .map(redisToken -> token.equals(redisToken));
+                                .flatMap(redisToken -> Mono.just(token.equals(redisToken)))
+                                .defaultIfEmpty(false); // Redis'te access token yoksa da false dön
                     });
         } catch (Exception e) {
             return Mono.just(false);

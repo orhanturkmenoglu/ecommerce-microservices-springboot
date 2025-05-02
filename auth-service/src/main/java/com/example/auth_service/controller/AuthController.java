@@ -2,8 +2,10 @@ package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.UserLoginRequestDTO;
 import com.example.auth_service.dto.request.UserRegistrationRequestDTO;
+import com.example.auth_service.dto.request.UserUpdatePasswordRequestDTO;
 import com.example.auth_service.dto.response.UserLoginResponseDTO;
 import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
+import com.example.auth_service.dto.response.UserUpdatePasswordResponseDTO;
 import com.example.auth_service.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,10 +14,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -45,5 +46,38 @@ public class AuthController {
         UserLoginResponseDTO response = authService.login(userLoginRequestDTO);
         return ResponseEntity.ok(response);
     }
+
+
+    @Operation(summary = "Update user password", description = "Update the password of the authenticated user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password updated successfully."),
+            @ApiResponse(responseCode = "400", description = "Invalid request data.")
+    })
+    @PutMapping("/update-password")
+    public ResponseEntity<UserUpdatePasswordResponseDTO> updatePassword(@Valid @RequestBody UserUpdatePasswordRequestDTO updatePasswordRequestDTO) {
+        UserUpdatePasswordResponseDTO response = authService.updatePassword(updatePasswordRequestDTO);
+        return ResponseEntity.ok(response);
+    }
+
+
+    @Operation(summary = "User logout", description = "Log out the authenticated user by invalidating the access token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful."),
+            @ApiResponse(responseCode = "400", description = "Invalid access token.")
+    })
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
+        authService.logout(token);
+        return ResponseEntity.ok("Logged out");
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<UserLoginResponseDTO> refreshAccessToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+
+        UserLoginResponseDTO response = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(response);
+    }
+
 
 }

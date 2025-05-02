@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Environment.Cache">
+    <option name="cache">
+      <map>
+        <entry key="env" value="[{&quot;datum1&quot;:&quot;Global&quot;,&quot;datum2&quot;:&quot;1746213447987jwvs&quot;,&quot;datum0&quot;:true,&quot;datum3&quot;:[{&quot;datum1&quot;:&quot;auth-service&quot;,&quot;datum2&quot;:&quot;1746213447998oos3&quot;,&quot;datum0&quot;:true,&quot;datum3&quot;:[{&quot;datum1&quot;:&quot;http://localhost&quot;,&quot;datum2&quot;:&quot;9090&quot;,&quot;datum0&quot;:true,&quot;datum3&quot;:&quot;&quot;,&quot;datum4&quot;:&quot;174621344800178jw&quot;}]}]}]" />
+      </map>
+    </option>
+  </component>
+</project>

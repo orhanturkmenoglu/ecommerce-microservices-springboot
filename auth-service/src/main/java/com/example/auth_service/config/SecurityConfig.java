@@ -33,10 +33,13 @@ public class SecurityConfig {
 
     private final List<String> publicEndpoints = List.of(
             "/api/v1/auth/login",
-            "/api/v1/auth/register");
+            "/api/v1/auth/register"
+           );
 
     private final List<String> authenticatedEndpoints = List.of(
-            "/api/v1/auth/test"
+            "/api/v1/auth/test",
+            "/api/v1/auth/logout",
+            "/api/v1/auth/update-password"
     );
 
     @Bean
