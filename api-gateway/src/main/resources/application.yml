@@ -58,6 +58,11 @@ spring:
             - JwtAuthenticationFilter
 
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   security:
     secret:
       key: ${SPRING.SECURITY.SECRET.KEY:default}
