@@ -2,7 +2,6 @@ package com.example.api.gateway.filter;
 
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -36,10 +35,11 @@ public class JwtTokenUtil {
                     .parseClaimsJws(token)
                     .getBody();
 
-            String email = claims.getSubject(); // ya da token'a koyduğun başka bir kullanıcı bilgisi
+            String email = claims.getSubject();
 
             // Redis'te blacklist kontrolü:
-            return redisTemplate.hasKey("BLACKLISTED:" + token)
+            return redisTemplate.opsForSet()
+                    .isMember("BLACKLISTED", token)
                     .flatMap(isBlacklisted -> {
                         if (Boolean.TRUE.equals(isBlacklisted)) {
                             System.out.println("Blacklisted token: " + token);

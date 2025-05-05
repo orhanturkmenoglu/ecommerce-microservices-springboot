@@ -49,12 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            String cachedAccessToken = jwtTokenCacheService.getAccessToken(username);
-            log.info("cachedAccessToken : {}", cachedAccessToken);
-
-            if (cachedAccessToken != null && cachedAccessToken.equals(token)
-                    && jwtTokenCacheService.isTokenValid(token, username)) {
-
+            if (jwtTokenCacheService.isTokenInCache(username)) {
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
                 if (jwtTokenUtil.isValidateToken(token, userDetails)) {
@@ -66,11 +61,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }else {
+                    jwtTokenUtil.isValidateRefreshToken(token, userDetails);
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(userDetails,
+                                    null, userDetails.getAuthorities());
+
+
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
 
+            filterChain.doFilter(request, response);
         }
 
-        filterChain.doFilter(request, response);
     }
+
 }

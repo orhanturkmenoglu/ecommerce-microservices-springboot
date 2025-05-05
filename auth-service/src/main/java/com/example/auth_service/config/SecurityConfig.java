@@ -39,7 +39,8 @@ public class SecurityConfig {
     private final List<String> authenticatedEndpoints = List.of(
             "/api/v1/auth/test",
             "/api/v1/auth/logout",
-            "/api/v1/auth/update-password"
+            "/api/v1/auth/update-password",
+            "/api/v1/auth/refresh-token"
     );
 
     @Bean

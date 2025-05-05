@@ -44,4 +44,11 @@ logging:
   level:
     org:
       springframework: DEBUG
+  file:
+    name: logs/auth-service.log
+  charset:
+    file: UTF-8
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss
+
 

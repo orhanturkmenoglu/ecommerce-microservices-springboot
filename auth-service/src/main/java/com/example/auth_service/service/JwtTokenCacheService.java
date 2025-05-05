@@ -54,13 +54,15 @@ public class JwtTokenCacheService {
     public boolean isTokenValid(String token, String email) {
         String cachedAccessToken = getAccessToken(email);
         log.info("Checking if token {} is valid for email {}", token, email);
+
         if (cachedAccessToken == null || !cachedAccessToken.equals(token)) {
             return false;
         }
 
         Long expire = redisTemplate.getExpire("access:" + email, TimeUnit.SECONDS);
         log.info("expire: {}", expire);
-        return expire != null && expire > 0 && !isTokenBlackListed(token);
+
+        return expire != null  && expire > 0 && !isTokenBlackListed(token);
     }
 
     public boolean isRefreshTokenValid(String token, String email) {
@@ -106,4 +108,9 @@ public class JwtTokenCacheService {
     }
 
 
+    public boolean isTokenInCache(String email) {
+        log.info("Checking if token {} is in cache", email);
+        return Boolean.TRUE.equals(redisTemplate.hasKey("access:" + email)) ||
+                Boolean.TRUE.equals(redisTemplate.hasKey("refresh:" + email));
+    }
 }

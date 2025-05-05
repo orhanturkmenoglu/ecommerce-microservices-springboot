@@ -4,15 +4,17 @@ import com.example.auth_service.utils.IdGenerator;
 import com.example.auth_service.utils.Prefix;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Prefix("token")
 @Entity
 @Table(name = "tokens")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Token {
