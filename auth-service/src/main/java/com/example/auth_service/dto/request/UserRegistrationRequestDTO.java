@@ -23,4 +23,5 @@ public class UserRegistrationRequestDTO {
     @Size(min = 6, message = "Password must be at least 6 characters long.")
     @Schema(description = "User's password.", example = "securePassword123", minLength = 6)
     private String password;
+
 }

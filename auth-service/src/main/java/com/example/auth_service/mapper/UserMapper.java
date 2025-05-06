@@ -9,6 +9,7 @@ public class UserMapper {
     public static User mapToUser(UserRegistrationRequestDTO userRegistrationRequestDTO) {
         User user = new User();
         user.setEmail(userRegistrationRequestDTO.getEmail());
+        user.setEmailVerified(false);
         user.setPassword(userRegistrationRequestDTO.getPassword());
         user.setRole(Role.ROLE_USER);
         return user;

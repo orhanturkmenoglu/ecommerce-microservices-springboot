@@ -1,11 +1,16 @@
 package com.example.auth_service.service;
 
+import com.example.auth_service.dto.request.UserEmailVerificationRequestDto;
 import com.example.auth_service.dto.request.UserLoginRequestDTO;
 import com.example.auth_service.dto.request.UserRegistrationRequestDTO;
 import com.example.auth_service.dto.request.UserUpdatePasswordRequestDTO;
+import com.example.auth_service.dto.response.UserEmailVerificationResponseDto;
 import com.example.auth_service.dto.response.UserLoginResponseDTO;
 import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
 import com.example.auth_service.dto.response.UserUpdatePasswordResponseDTO;
+import com.example.auth_service.exception.EmailAlreadyExistsException;
+import com.example.auth_service.exception.EmailSendException;
+import com.example.auth_service.exception.InvalidVerificationCodeException;
 import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.model.Token;
 import com.example.auth_service.model.User;
@@ -26,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,22 +45,58 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
     private final TokenRepository tokenRepository;
-    private final JwtTokenCacheService jwtTokenCacheService;
+    private final JwtTokenCacheService cacheService;
+    private final EmailService emailService;
 
     @Transactional
     public UserRegistrationResponseDTO register(UserRegistrationRequestDTO userRegistrationRequestDTO) {
 
+        if (userRepository.existsByEmail(userRegistrationRequestDTO.getEmail())) {
+            throw new EmailAlreadyExistsException("User with email " + userRegistrationRequestDTO.getEmail() + " already exists");
+        }
+
         User user = UserMapper.mapToUser(userRegistrationRequestDTO);
         user.setPassword(passwordEncoder.encode(userRegistrationRequestDTO.getPassword()));
 
-        log.info("User : {}", user);
+        String verificationCode = generateVerificationCode();
+        log.info("Verification code : {}", verificationCode);
 
         User savedUser = userRepository.save(user);
 
         log.info("User saved : {}", savedUser);
 
+        try {
+            emailService.sendEmailVerification(savedUser.getEmail(), verificationCode);
+        }catch (Exception e) {
+            throw new EmailSendException("Failed to send email verification");
+        }
+
+        cacheService.storeVerificationCodeInRedis(savedUser.getEmail(), verificationCode);
 
         return new UserRegistrationResponseDTO("User registered successfully : " + savedUser.getEmail());
+    }
+
+
+    public UserEmailVerificationResponseDto verifyEmail(UserEmailVerificationRequestDto userEmailVerificationRequestDto) {
+
+        User user = userRepository.findByEmail(userEmailVerificationRequestDto.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (user.isEmailVerified()) {
+            throw new EmailAlreadyExistsException("User with email " + userEmailVerificationRequestDto.getEmail() + " already verified");
+        }
+
+        boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(userEmailVerificationRequestDto.getEmail(),
+                userEmailVerificationRequestDto.getVerificationCode());
+
+        if (!isVerificationCodeCached) {
+            throw new InvalidVerificationCodeException("Invalid verification code");
+        }
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        return new UserEmailVerificationResponseDto("Email verified successfully");
     }
 
 
@@ -82,6 +125,10 @@ public class AuthService {
 
         log.info("login:: User found : {}", user);
 
+        if (!user.isEmailVerified()) {
+            throw new InvalidVerificationCodeException("Email not verified");
+        }
+
         List<Token> allAccessTokenByUser = tokenRepository.findAllTokenByUser(user.getId());
 
         if (!allAccessTokenByUser.isEmpty()) {
@@ -90,8 +137,8 @@ public class AuthService {
         }
 
 
-        String oldAccessToken = jwtTokenCacheService.getAccessToken(user.getEmail());
-        String oldRefreshToken = jwtTokenCacheService.getRefreshToken(user.getEmail());
+        String oldAccessToken = cacheService.getAccessToken(user.getEmail());
+        String oldRefreshToken = cacheService.getRefreshToken(user.getEmail());
 
         log.info("oldAccessToken : {}", oldAccessToken);
         log.info("oldRefreshToken : {}", oldRefreshToken);
@@ -103,17 +150,18 @@ public class AuthService {
         log.info("newRefreshToken : {}", newRefreshToken);
 
         if (oldAccessToken != null && oldRefreshToken != null) {
-            jwtTokenCacheService.invalidateOldTokenAndStoreNew(oldAccessToken,
+            cacheService.invalidateOldTokenAndStoreNew(oldAccessToken,
                     newAccessToken, newRefreshToken, user.getEmail());
         }
 
-        jwtTokenCacheService.storeAccessToken(newAccessToken, user.getEmail());
-        jwtTokenCacheService.storeRefreshToken(newRefreshToken, user.getEmail());
+        cacheService.storeAccessToken(newAccessToken, user.getEmail());
+        cacheService.storeRefreshToken(newRefreshToken, user.getEmail());
 
         saveUserToken(newAccessToken, newRefreshToken, user);
 
         return new UserLoginResponseDTO(newAccessToken, newRefreshToken);
     }
+
 
     public UserLoginResponseDTO refreshToken(String refreshToken) {
 
@@ -132,21 +180,21 @@ public class AuthService {
         String userEmail = existingToken.getUser().getEmail();
         log.info("Refresh token found for user: {}", userEmail);
 
-        boolean isValidInCache = jwtTokenCacheService.isRefreshTokenValid(cleanToken, userEmail);
+        boolean isValidInCache = cacheService.isRefreshTokenValid(cleanToken, userEmail);
 
         if (isValidInCache) {
             log.warn("Refresh token is not valid in cache for user: {}", userEmail);
             throw new BadCredentialsException("Invalid refresh token");
         }
 
-        boolean tokenBlackListed = jwtTokenCacheService.isTokenBlackListed(refreshToken);
+        boolean tokenBlackListed = cacheService.isTokenBlackListed(refreshToken);
 
         if (tokenBlackListed) {
             log.warn("Refresh token is blacklisted for user: {}", userEmail);
             throw new BadCredentialsException("Invalid refresh token");
         }
 
-        jwtTokenCacheService.invalidateOldTokenAndStoreNew(refreshToken,
+        cacheService.invalidateOldTokenAndStoreNew(refreshToken,
                 existingToken.getAccessToken(), existingToken.getRefreshToken(), userEmail);
 
         existingToken.setActive(false);
@@ -156,8 +204,8 @@ public class AuthService {
         String newAccessToken = jwtTokenUtil.generateAccessToken(existingToken.getUser());
         String newRefreshToken = jwtTokenUtil.generateRefreshToken(existingToken.getUser());
 
-        jwtTokenCacheService.storeAccessToken(newAccessToken, userEmail);
-        jwtTokenCacheService.storeRefreshToken(newRefreshToken, userEmail);
+        cacheService.storeAccessToken(newAccessToken, userEmail);
+        cacheService.storeRefreshToken(newRefreshToken, userEmail);
 
         saveUserToken(newAccessToken, newRefreshToken, existingToken.getUser());
 
@@ -239,11 +287,17 @@ public class AuthService {
             tokenRepository.saveAll(tokenList);
             log.info("logout:: Inactivated {} tokens for user: {}", tokenList.size(), user);
 
-            jwtTokenCacheService.addToBlacklist(refreshToken);
+            cacheService.addToBlacklist(refreshToken);
             log.info("logout:: Token added to blacklist: {}", extractedUsername);
         } else {
             log.warn("logout:: No active tokens found for user: {}", user);
         }
+    }
+
+    private String generateVerificationCode() {
+        String randomUuid = UUID.randomUUID().toString().replace("-", "");
+        randomUuid = randomUuid.toUpperCase(Locale.ROOT);
+        return randomUuid.substring(0, 6);
     }
 
     private void saveUserToken(String accessToken, String refreshToken, User user) {

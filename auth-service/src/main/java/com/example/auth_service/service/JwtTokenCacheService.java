@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -21,14 +22,30 @@ public class JwtTokenCacheService {
     @Value("${spring.security.refresh.token.expiration}")
     private long REFRESH_EXPIRATION;
 
+    @Value("${spring.security.verification.code.ttl.minutes}")
+    private long VERIFICATION_CODE_TTL_MINUTES;
+
     public void storeAccessToken(String token, String email) {
         log.info("Storing access token {} to email {}", token, email);
-        redisTemplate.opsForValue().set("access:" + email, token, ACCESS_EXPIRATION,TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("access:" + email, token, ACCESS_EXPIRATION, TimeUnit.SECONDS);
     }
 
     public void storeRefreshToken(String token, String email) {
         log.info("Storing refresh token {} to email {}", token, email);
-        redisTemplate.opsForValue().set("refresh:" + email, token, REFRESH_EXPIRATION,TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("refresh:" + email, token, REFRESH_EXPIRATION, TimeUnit.SECONDS);
+    }
+
+    public void storeVerificationCodeInRedis(String email, String verificationCode) {
+        log.info("Storing verification code {} for email {}", verificationCode, email);
+        redisTemplate.opsForValue().set("verificationCode:" + email, verificationCode, Duration.ofMinutes(VERIFICATION_CODE_TTL_MINUTES));
+    }
+
+    public boolean isVerificationCodeCached(String email, String verificationCode) {
+        String key = "verificationCode:" + email;
+        log.info("Checking if verification code {} is cached for email {}", verificationCode, email);
+
+        String cachedCode = redisTemplate.opsForValue().get(key);
+        return verificationCode.equalsIgnoreCase(cachedCode);
     }
 
     public String getAccessToken(String email) {
@@ -62,7 +79,7 @@ public class JwtTokenCacheService {
         Long expire = redisTemplate.getExpire("access:" + email, TimeUnit.SECONDS);
         log.info("expire: {}", expire);
 
-        return expire != null  && expire > 0 && !isTokenBlackListed(token);
+        return expire != null && expire > 0 && !isTokenBlackListed(token);
     }
 
     public boolean isRefreshTokenValid(String token, String email) {
@@ -113,4 +130,6 @@ public class JwtTokenCacheService {
         return Boolean.TRUE.equals(redisTemplate.hasKey("access:" + email)) ||
                 Boolean.TRUE.equals(redisTemplate.hasKey("refresh:" + email));
     }
+
+
 }

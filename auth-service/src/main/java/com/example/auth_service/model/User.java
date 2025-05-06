@@ -4,7 +4,10 @@ import com.example.auth_service.enums.Role;
 import com.example.auth_service.utils.IdGenerator;
 import com.example.auth_service.utils.Prefix;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +31,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
+    @Column(name = "email_verified")
+    private boolean emailVerified;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Token> tokens;
 
     private LocalDateTime createdAt;

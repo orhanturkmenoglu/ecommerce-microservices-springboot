@@ -38,7 +38,23 @@ spring:
     refresh:
       token:
         expiration: ${SPRING.SECURITY.REFRESH.TOKEN.EXPIRATION:604800000}
+    verification:
+      code:
+        ttl:
+          minutes: ${SPRING.SECURITY.VERIFICATION.CODE.EXPIRATION:15}
 
+
+  mail:
+    host: ${SPRING.MAIL.HOST:smtp.gmail.com}
+    port: ${SPRING.MAIL.PORT:587}
+    username: ${SPRING.MAIL.USERNAME:orhantrkmn14@gmail.com}
+    password: ${SPRING.MAIL.PASSWORD:xhjzhzucguifcsgb}
+    protocol: ${SPRING.MAIL.PROTOCOL:smtp}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
 
 logging:
   level:

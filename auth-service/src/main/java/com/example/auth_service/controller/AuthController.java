@@ -1,8 +1,10 @@
 package com.example.auth_service.controller;
 
+import com.example.auth_service.dto.request.UserEmailVerificationRequestDto;
 import com.example.auth_service.dto.request.UserLoginRequestDTO;
 import com.example.auth_service.dto.request.UserRegistrationRequestDTO;
 import com.example.auth_service.dto.request.UserUpdatePasswordRequestDTO;
+import com.example.auth_service.dto.response.UserEmailVerificationResponseDto;
 import com.example.auth_service.dto.response.UserLoginResponseDTO;
 import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
 import com.example.auth_service.dto.response.UserUpdatePasswordResponseDTO;
@@ -73,6 +75,12 @@ public class AuthController {
     public ResponseEntity<UserLoginResponseDTO> refreshAccessToken(@RequestHeader("Authorization") String refreshToken) {
         UserLoginResponseDTO response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@Valid @RequestBody UserEmailVerificationRequestDto userEmailVerificationRequestDto) {
+        UserEmailVerificationResponseDto verifiedEmail = authService.verifyEmail(userEmailVerificationRequestDto);
+        return ResponseEntity.ok(verifiedEmail.getMessage());
     }
 
 
