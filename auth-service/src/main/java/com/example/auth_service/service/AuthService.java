@@ -80,12 +80,12 @@ public class AuthService {
         User user = userRepository.findByEmail(userEmailVerificationRequestDto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (!user.isEmailVerified()) {
+        if (user.isEmailVerified()) {
             throw new EmailAlreadyExistsException("User with email " + userEmailVerificationRequestDto.getEmail() + " already verified");
         }
 
         boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(
-                (userEmailVerificationRequestDto.getEmail())) ;
+                (userEmailVerificationRequestDto.getEmail()));
 
 
         if (!isVerificationCodeCached) {
@@ -107,7 +107,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " not found"));
 
-        if (!user.isEmailVerified()) {
+        if (user.isEmailVerified()) {
             throw new EmailAlreadyExistsException("Email already verified");
         }
 
@@ -166,6 +166,7 @@ public class AuthService {
         if (!user.isEmailVerified()) {
             throw new InvalidVerificationCodeException("Email not verified");
         }
+
 
         List<Token> allAccessTokenByUser = tokenRepository.findAllTokenByUser(user.getId());
 
@@ -318,6 +319,7 @@ public class AuthService {
         cacheService.deleteCacheVerificationCode(user.getEmail());
 
         user.setEmailVerified(false);
+        user.setLoggedOut(true);
 
         List<Token> tokenList = tokenRepository.findAllTokenByUser(user.getId());
 

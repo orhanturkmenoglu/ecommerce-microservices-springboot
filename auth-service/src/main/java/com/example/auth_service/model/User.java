@@ -34,6 +34,9 @@ public class User {
     @Column(name = "email_verified")
     private boolean emailVerified;
 
+    @Column(name = "is_logged_out")
+    private boolean isLoggedOut;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Token> tokens;
 
