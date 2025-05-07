@@ -40,12 +40,32 @@ public class JwtTokenCacheService {
         redisTemplate.opsForValue().set("verificationCode:" + email, verificationCode, Duration.ofMinutes(VERIFICATION_CODE_TTL_MINUTES));
     }
 
-    public boolean isVerificationCodeCached(String email, String verificationCode) {
+    public boolean isVerificationCodeCached(String email) {
         String key = "verificationCode:" + email;
-        log.info("Checking if verification code {} is cached for email {}", verificationCode, email);
+        log.info("Checking if verification code is cached for email {}", email);
 
-        String cachedCode = redisTemplate.opsForValue().get(key);
-        return verificationCode.equalsIgnoreCase(cachedCode);
+        String cachedVerificationCode = redisTemplate.opsForValue().get(key);
+
+        if (cachedVerificationCode == null) {
+            log.warn("No verification code found in Redis for email {}. It may have expired.", email);
+            return false;
+        }
+
+        Long expire = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+
+        if (expire != null && expire > 0) {
+            log.info("Verification code {} is valid for email {}", cachedVerificationCode, email);
+            return true;
+        }
+
+        log.error("Verification code {} is not valid for email {}", cachedVerificationCode, email);
+        return false;
+    }
+
+    public boolean isVerificationCodeExpired(String email) {
+        String key = "verificationCode:" + email;
+        Long expire = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+        return expire != null && expire > 0;
     }
 
     public String getAccessToken(String email) {
@@ -132,4 +152,8 @@ public class JwtTokenCacheService {
     }
 
 
+    public void deleteCacheVerificationCode(String email) {
+        log.info("Deleting verification code for email {}", email);
+        redisTemplate.delete("verificationCode:" + email);
+    }
 }

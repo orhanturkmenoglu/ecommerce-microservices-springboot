@@ -8,9 +8,7 @@ import com.example.auth_service.dto.response.UserEmailVerificationResponseDto;
 import com.example.auth_service.dto.response.UserLoginResponseDTO;
 import com.example.auth_service.dto.response.UserRegistrationResponseDTO;
 import com.example.auth_service.dto.response.UserUpdatePasswordResponseDTO;
-import com.example.auth_service.exception.EmailAlreadyExistsException;
-import com.example.auth_service.exception.EmailSendException;
-import com.example.auth_service.exception.InvalidVerificationCodeException;
+import com.example.auth_service.exception.*;
 import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.model.Token;
 import com.example.auth_service.model.User;
@@ -67,7 +65,7 @@ public class AuthService {
 
         try {
             emailService.sendEmailVerification(savedUser.getEmail(), verificationCode);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new EmailSendException("Failed to send email verification");
         }
 
@@ -82,12 +80,13 @@ public class AuthService {
         User user = userRepository.findByEmail(userEmailVerificationRequestDto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (user.isEmailVerified()) {
+        if (!user.isEmailVerified()) {
             throw new EmailAlreadyExistsException("User with email " + userEmailVerificationRequestDto.getEmail() + " already verified");
         }
 
-        boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(userEmailVerificationRequestDto.getEmail(),
-                userEmailVerificationRequestDto.getVerificationCode());
+        boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(
+                (userEmailVerificationRequestDto.getEmail())) ;
+
 
         if (!isVerificationCodeCached) {
             throw new InvalidVerificationCodeException("Invalid verification code");
@@ -97,6 +96,39 @@ public class AuthService {
         userRepository.save(user);
 
         return new UserEmailVerificationResponseDto("Email verified successfully");
+    }
+
+    public void resendVerificationCode(String email) {
+
+        if (email == null) {
+            throw new NullPointerException("Email cannot be null");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " not found"));
+
+        if (!user.isEmailVerified()) {
+            throw new EmailAlreadyExistsException("Email already verified");
+        }
+
+        boolean isVerificationCodeExpired = cacheService.isVerificationCodeExpired(user.getEmail());
+
+        if (isVerificationCodeExpired) {
+            throw new VerificationCodeStillValidException("Current verification code is still valid. Please wait or use the existing code.");
+        }
+
+        String newVerificationCode = generateVerificationCode();
+
+        cacheService.storeVerificationCodeInRedis(
+                user.getEmail(),
+                newVerificationCode
+        );
+
+        try {
+            emailService.sendEmailVerification(user.getEmail(), newVerificationCode);
+        } catch (Exception e) {
+            throw new EmailSendException("Failed to send email verification");
+        }
     }
 
 
@@ -124,6 +156,12 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         log.info("login:: User found : {}", user);
+
+        boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(user.getEmail());
+
+        if (!isVerificationCodeCached) {
+            throw new VerificationCodeExpiredException("Verification code expired. Please request a new one.");
+        }
 
         if (!user.isEmailVerified()) {
             throw new InvalidVerificationCodeException("Email not verified");
@@ -277,6 +315,9 @@ public class AuthService {
 
         log.info("logout:: User found: {}", user);
 
+        cacheService.deleteCacheVerificationCode(user.getEmail());
+
+        user.setEmailVerified(false);
 
         List<Token> tokenList = tokenRepository.findAllTokenByUser(user.getId());
 
@@ -294,11 +335,13 @@ public class AuthService {
         }
     }
 
+
     private String generateVerificationCode() {
         String randomUuid = UUID.randomUUID().toString().replace("-", "");
         randomUuid = randomUuid.toUpperCase(Locale.ROOT);
         return randomUuid.substring(0, 6);
     }
+
 
     private void saveUserToken(String accessToken, String refreshToken, User user) {
 

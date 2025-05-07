@@ -34,7 +34,8 @@ public class SecurityConfig {
     private final List<String> publicEndpoints = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/api/v1/auth/verify-email"
+            "/api/v1/auth/verify-email",
+            "/api/v1/auth/resend-verification-code"
            );
 
     private final List<String> authenticatedEndpoints = List.of(

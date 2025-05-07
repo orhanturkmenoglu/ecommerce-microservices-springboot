@@ -84,4 +84,10 @@ public class AuthController {
     }
 
 
+    @PostMapping("/resend-verification-code")
+    public ResponseEntity<String> resendVerificationCode(@RequestParam String email) {
+        authService.resendVerificationCode(email);
+        return ResponseEntity.ok("Yeni doğrulama kodu gönderildi.");
+    }
+
 }
