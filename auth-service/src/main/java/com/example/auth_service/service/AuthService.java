@@ -155,6 +155,8 @@ public class AuthService {
         User user = userRepository.findByEmail(userLoginRequestDTO.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        user.setLoggedOut(true);
+
         log.info("login:: User found : {}", user);
 
         boolean isVerificationCodeCached = cacheService.isVerificationCodeCached(user.getEmail());
