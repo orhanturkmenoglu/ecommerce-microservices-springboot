@@ -5,12 +5,6 @@ spring:
   application:
     name: AUTH-SERVICE
 
-  datasource:
-    url: ${SPRING.DATASOURCE.URL:jdbc:mysql://${DATABASE.HOST:localhost}:3306/${DATABASE.NAME:microservice}}
-    username: ${SPRING.DATASOURCE.USERNAME:root}
-    password: ${SPRING.DATASOURCE.PASSWORD:12345}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,17 +15,21 @@ spring:
 
   data:
     redis:
-      host: ${SPRING.DATA.REDIS.HOST:localhost}
-      port: ${SPRING.DATA.REDIS.PORT:6379}
-
-
+      host: ${SPRING_DATA_REDIS_HOST:default}
+      port: ${SPRING_DATA_REDIS_PORT:default}
 
   config:
-    import: optional:configserver:http://localhost:8084
+    import: >
+      optional:configserver:http://localhost:8084,
+      optional:aws-secretsmanager:spring-security-key,
+      optional:aws-secretsmanager:microservice-db-config,
+      optional:aws-secretsmanager:ecommerce-app/mail-config,
+      optional:aws-secretsmanager:ecommerce-app/redis-config
+
 
   security:
     secret:
-      key: ${SPRING.SECURITY.SECRET.KEY:default}
+      key: ${SPRING.SECURITY.SECRET.KEY:default-local-secret}
     access:
       token:
         expiration: ${SPRING.SECURITY.ACCESS.TOKEN.EXPIRATION:3600000}
@@ -45,16 +43,22 @@ spring:
 
 
   mail:
-    host: ${SPRING.MAIL.HOST:smtp.gmail.com}
-    port: ${SPRING.MAIL.PORT:587}
-    username: ${SPRING.MAIL.USERNAME:orhantrkmn14@gmail.com}
-    password: ${SPRING.MAIL.PASSWORD:xhjzhzucguifcsgb}
-    protocol: ${SPRING.MAIL.PROTOCOL:smtp}
+    host: ${SPRING.MAIL.HOST:}
+    port: ${SPRING.MAIL.PORT:}
+    username: ${SPRING.MAIL.USERNAME:}
+    password: ${SPRING.MAIL.PASSWORD:}
+    protocol: ${SPRING.MAIL.PROTOCOL:}
     properties:
       mail:
         smtp:
           auth: true
           starttls.enable: true
+
+aws:
+  access-key-id: ${AWS_SECRET_KEY_ID}
+  secret-access-key: ${AWS_SECRET_VALUE}
+  region: ${AWS_REGION}
+  db-config-secret-name: ${AWS_DB_CONFIG_SECRET_NAME}
 
 logging:
   level:

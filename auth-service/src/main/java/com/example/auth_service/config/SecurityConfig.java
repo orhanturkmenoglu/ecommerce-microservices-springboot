@@ -45,6 +45,10 @@ public class SecurityConfig {
             "/api/v1/auth/refresh-token"
     );
 
+    private final List<String> adminEndpoints = List.of(
+            "/api/v1/admin/**"
+    );
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -55,6 +59,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize.requestMatchers(publicEndpoints.toArray(String[]::new)).permitAll()
                                 .requestMatchers(authenticatedEndpoints.toArray(String[]::new)).hasRole("USER")
+                                .requestMatchers(adminEndpoints.toArray(String[]::new)).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .userDetailsService(customUserDetailsService)
