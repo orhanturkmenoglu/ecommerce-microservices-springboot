@@ -16,12 +16,13 @@ public class AdminController {
     private final SecretManagerService secretManagerService;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/secret")
     public ResponseEntity<String> getSecret(@RequestParam String secretName) {
         return ResponseEntity.ok(secretManagerService.getSecret(secretName));
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<String>> getAllSecrets() {
         return ResponseEntity.ok(secretManagerService.getAllSecrets());
